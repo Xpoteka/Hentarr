@@ -1,0 +1,14 @@
+.git
+.github
+.vscode
+node_modules
+_output
+_artifacts
+_tests
+_temp
+docker
+distribution
+Logo
+schemas
+**/*.md
+azure-pipelines.yml
