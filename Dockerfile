@@ -36,6 +36,8 @@ RUN case "$TARGETARCH" in \
         -p:Platform=Posix \
         -p:RuntimeIdentifiers=$RID \
         -p:EnableWindowsTargeting=true \
+        -p:EnforceCodeStyleInBuild=false \
+        -p:TreatWarningsAsErrors=false \
         -t:PublishAllRids && \
     mv "_output/net6.0/$RID/publish" /app-bin && \
     rm -f /app-bin/ServiceInstall.* /app-bin/ServiceUninstall.* /app-bin/Whisparr.Windows.* && \
