@@ -34,10 +34,10 @@ namespace NzbDrone.Core.MetadataSource.AniDb.Catalog
 
         public List<CatalogItem> GetNextToSync(int limit)
         {
-            return Query(c => c.LastInfoSync == null)
-                .OrderByDescending(c => c.AniDbId)
-                .Take(limit)
-                .ToList();
+            using (var conn = _database.OpenConnection())
+            {
+                return conn.Query<CatalogItem>("SELECT * FROM \"CatalogItems\" WHERE \"LastInfoSync\" IS NULL ORDER BY \"AniDbId\" DESC LIMIT @limit", new { limit }).ToList();
+            }
         }
 
         public List<int> AllAniDbIds()

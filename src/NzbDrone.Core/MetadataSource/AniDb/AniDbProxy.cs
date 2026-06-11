@@ -42,6 +42,11 @@ namespace NzbDrone.Core.MetadataSource.AniDb
 
         public List<Series> SearchForNewSeries(string title)
         {
+            if (title.IsNullOrWhiteSpace())
+            {
+                return new List<Series>();
+            }
+
             var lowerTitle = title.ToLowerInvariant();
 
             if (lowerTitle.StartsWith("anidb:") || lowerTitle.StartsWith("anidbid:") || lowerTitle.StartsWith("aid:"))

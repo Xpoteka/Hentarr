@@ -215,7 +215,7 @@ namespace NzbDrone.Core.MetadataSource.AniDb
 
             using (var fileStream = File.OpenRead(path))
             using (var gzipStream = new GZipStream(fileStream, CompressionMode.Decompress))
-            using (var reader = XmlReader.Create(gzipStream))
+            using (var reader = XmlReader.Create(gzipStream, new XmlReaderSettings { DtdProcessing = DtdProcessing.Ignore, IgnoreComments = true, XmlResolver = null }))
             {
                 AniDbTitle current = null;
 
