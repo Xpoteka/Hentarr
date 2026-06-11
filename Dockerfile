@@ -15,6 +15,7 @@ ARG VERSION=
 ARG BRANCH=
 WORKDIR /build
 
+COPY .editorconfig ./
 COPY src ./src
 
 RUN case "$TARGETARCH" in \
@@ -36,6 +37,7 @@ RUN case "$TARGETARCH" in \
         -p:Platform=Posix \
         -p:RuntimeIdentifiers=$RID \
         -p:EnableWindowsTargeting=true \
+        -p:EnableAnalyzers=false \
         -t:PublishAllRids && \
     mv "_output/net6.0/$RID/publish" /app-bin && \
     rm -f /app-bin/ServiceInstall.* /app-bin/ServiceUninstall.* /app-bin/Whisparr.Windows.* && \
