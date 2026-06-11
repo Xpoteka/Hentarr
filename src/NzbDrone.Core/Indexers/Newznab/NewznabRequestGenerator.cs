@@ -123,6 +123,16 @@ namespace NzbDrone.Core.Indexers.Newznab
                             searchQuery));
                     }
 
+                    // Add absolute episode number search for anime style releases (Title 01)
+                    if (searchCriteria.AbsoluteEpisodeNumber.HasValue)
+                    {
+                        var searchQuery = $"&q={normalizedQueryTitle}+{searchCriteria.AbsoluteEpisodeNumber.Value:00}";
+                        pageableRequests.Add(GetPagedRequests(MaxPages,
+                            Settings.Categories,
+                            "search",
+                            searchQuery));
+                    }
+
                     // Add External ID search if selected and available
                     if (Settings.SearchExternalIdOnly && !string.IsNullOrWhiteSpace(searchCriteria.ExternalId))
                     {

@@ -65,6 +65,7 @@ namespace NzbDrone.Core.Configuration
         string AniDbApiUrl { get; }
         string AniDbClientName { get; }
         string AniDbTitlesUrl { get; }
+        int AniDbCatalogBatchSize { get; }
         string GithubOwnerRepo { get; }
     }
 
@@ -158,6 +159,10 @@ namespace NzbDrone.Core.Configuration
                 return anidbTitlesUrl;
             }
         }
+
+        // How many anime are fetched from AniDB per catalog sync run. Keep this
+        // conservative, aggressive values will get the client banned by AniDB.
+        public int AniDbCatalogBatchSize => GetValueInt("AniDbCatalogBatchSize", 40);
 
         public string GithubOwnerRepo
         {

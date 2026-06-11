@@ -729,7 +729,7 @@
     "ConnectionLostReconnect": "Radarr spróbuje połączyć się automatycznie lub możesz kliknąć przycisk przeładuj poniżej.",
     "ConnectionLostToBackend": "Radarr utracił połączenie z silnikiem programu, aby przywrócić funkcjonalność musi zostać zrestartowany.",
     "DelayingDownloadUntil": "Opóźnianie pobierania do {0} o {1}",
-    "DeletedReasonMissingFromDisk": "Whisparr nie mógł znaleźć pliku na dysku, więc został usunięty",
+    "DeletedReasonMissingFromDisk": "Hentarr nie mógł znaleźć pliku na dysku, więc został usunięty",
     "DownloadFailed": "Pobieranie nie udane",
     "Downloaded": "Pobrano",
     "Downloading": "Ściąganie",

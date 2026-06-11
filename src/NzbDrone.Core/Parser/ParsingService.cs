@@ -175,6 +175,16 @@ namespace NzbDrone.Core.Parser
 
         private List<Episode> GetEpisodes(ParsedEpisodeInfo parsedEpisodeInfo, Series series, SearchCriteriaBase searchCriteria)
         {
+            if (parsedEpisodeInfo.IsAbsoluteNumbering)
+            {
+                var absoluteEpisodes = GetAbsoluteEpisodes(parsedEpisodeInfo, series, searchCriteria);
+
+                if (absoluteEpisodes.Any())
+                {
+                    return absoluteEpisodes;
+                }
+            }
+
             var episodeInfo = GetDailyEpisode(series, parsedEpisodeInfo.AirDate, parsedEpisodeInfo.ReleaseTokens, searchCriteria);
 
             if (episodeInfo != null)
@@ -195,6 +205,31 @@ namespace NzbDrone.Core.Parser
             }
 
             return new List<Episode>();
+        }
+
+        private List<Episode> GetAbsoluteEpisodes(ParsedEpisodeInfo parsedEpisodeInfo, Series series, SearchCriteriaBase searchCriteria)
+        {
+            var episodes = new List<Episode>();
+
+            foreach (var absoluteEpisodeNumber in parsedEpisodeInfo.AbsoluteEpisodeNumbers)
+            {
+                Episode episode = null;
+
+                if (searchCriteria != null)
+                {
+                    episode = searchCriteria.Episodes.FirstOrDefault(e => e.AbsoluteEpisodeNumber == absoluteEpisodeNumber);
+                }
+
+                episode ??= _episodeService.FindEpisode(series.Id, absoluteEpisodeNumber);
+
+                if (episode != null)
+                {
+                    _logger.Debug("Found episode {0} by absolute episode number {1}", episode, absoluteEpisodeNumber);
+                    episodes.Add(episode);
+                }
+            }
+
+            return episodes;
         }
 
         public ParsedEpisodeInfo ParseSpecialEpisodeTitle(ParsedEpisodeInfo parsedEpisodeInfo, string releaseTitle, int tvdbId, SearchCriteriaBase searchCriteria = null)

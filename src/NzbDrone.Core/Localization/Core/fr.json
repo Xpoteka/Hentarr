@@ -948,7 +948,7 @@
     "SiteTitle": "Titre du site",
     "CountImportListsSelected": "{count} liste(s) d'importation sélectionnée(s)",
     "ManageImportLists": "Gérer les listes d'importation",
-    "RemotePathMappingImportFailedHealthCheckMessage": "Whisparr n'a pas réussi à importer un ou plusieurs épisodes. Vérifiez vos journaux pour plus de détails.",
+    "RemotePathMappingImportFailedHealthCheckMessage": "Hentarr n'a pas réussi à importer un ou plusieurs épisodes. Vérifiez vos journaux pour plus de détails.",
     "CloneAutoTag": "Cloner la balise automatique",
     "ContinuingOnly": "Continuer seulement",
     "DeleteAutoTag": "Supprimer la balise automatique",

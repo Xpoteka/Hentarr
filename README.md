@@ -20,9 +20,10 @@ Configuration (optional, in `config.xml`):
 <AniDbApiUrl>http://api.anidb.net:9001/httpapi</AniDbApiUrl>
 <AniDbClientName>hentarr</AniDbClientName>
 <AniDbTitlesUrl>https://anidb.net/api/anime-titles.xml.gz</AniDbTitlesUrl>
+<AniDbCatalogBatchSize>40</AniDbCatalogBatchSize>
 ```
 
-> **Note:** AniDB requires HTTP API clients to be registered. Register your own client name on [anidb.net](https://anidb.net/software/add) and set it as `AniDbClientName` before heavy use.
+> **Note:** AniDB requires HTTP API clients to be registered. Register your own client name on [anidb.net](https://anidb.net/software/add) and set it as `AniDbClientName` before heavy use. Hentarr shows a health check notice while the default client name is in use.
 
 ### 2. Catalog: knowing what exists
 
@@ -60,11 +61,22 @@ titles dump (what exists)            – refreshed daily
 
 New titles from a watched studio are queued automatically as soon as the catalog learns about them; nothing you already have in Shoko is queued again.
 
+### 6. Anime release parsing and search
+
+On top of the Whisparr scene parser (date/title matching), Hentarr parses absolute-numbered anime release names and maps them to episodes via the AniDB absolute episode numbers:
+
+* `[SubGroup] Title - 01`, `[SubGroup] Title - 01v2`, `[SubGroup] Title - 01-02` (ranges)
+* `Title - 01 [SubGroup]`, `Title - 12 (DVD 480p)`
+* `Title Episode 1`, `Title.Ep02.1080p`
+
+Date-based patterns are tried first, so scene/JAV releases keep their existing matching. Searches additionally send `Title 01` style queries to Newznab/Torznab indexers (and Fanzub with *Anime Standard Format Search*), alongside the existing date, episode-title, and external-ID queries.
+
 ## Known limitations
 
-* The release parser is still the Whisparr scene parser (date/title matching). Absolute-numbered anime release names (`[Group] Title - 01`) are not reliably matched yet; episode-title and date-based releases work. Parser support for absolute numbering is the next planned step.
-* Studio aggregation is intentionally slow (AniDB rate limits); a complete first pass over the catalog takes a while. Newest titles are aggregated first.
+* Series matching uses the AniDB main title (romaji). Releases named with an English synonym only match if the episode title or date lines up; alternate-title (synonym) matching is a future step.
+* Studio aggregation is intentionally slow (AniDB rate limits, `AniDbCatalogBatchSize` per hour); a complete first pass over the catalog takes a while. Newest titles are aggregated first.
 * Catalog entries are synced once; metadata corrections on AniDB are picked up when a series is added/refreshed, not by the catalog.
+* Rebranding covers all user-visible text (UI, login, notifications, user agent). Internal names, executables and the data directory keep the upstream `Whisparr`/`NzbDrone` names for compatibility, the same way Whisparr keeps Sonarr internals.
 
 ## Major Features Include
 

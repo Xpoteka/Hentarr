@@ -668,7 +668,7 @@
     "ConnectionLostReconnect": "Radarr otomatik olarak bağlanmayı deneyecek veya aşağıdan yeniden yükle'yi tıklayabilirsiniz.",
     "Day": "Gün",
     "DelayingDownloadUntil": "İndirme işlemi {0} saat {1} itibarıyla erteleniyor",
-    "DeletedReasonMissingFromDisk": "Whisparr dosyayı diskte bulamadı, bu yüzden kaldırıldı",
+    "DeletedReasonMissingFromDisk": "Hentarr dosyayı diskte bulamadı, bu yüzden kaldırıldı",
     "DeletedReasonUpgrade": "Yükseltme almak için dosya silindi",
     "DownloadFailed": "Yükleme başarısız",
     "Downloaded": "İndirildi",

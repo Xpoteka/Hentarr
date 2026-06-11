@@ -664,7 +664,7 @@
     "ConnectionLostReconnect": "Radarr mun reyna að tengjast sjálfkrafa eða þú getur smellt á endurhlaða hér að neðan.",
     "Day": "Dagur",
     "DelayingDownloadUntil": "Seinkar niðurhali til {0} kl. {1}",
-    "DeletedReasonMissingFromDisk": "Whisparr gat ekki fundið skrána á disknum svo hún var fjarlægð",
+    "DeletedReasonMissingFromDisk": "Hentarr gat ekki fundið skrána á disknum svo hún var fjarlægð",
     "DeletedReasonUpgrade": "Skrá var eytt til að flytja inn uppfærslu",
     "DestinationPath": "Áfangastaður Slóð",
     "DestinationRelativePath": "Hlutfallsleg leið áfangastaðar",

@@ -664,7 +664,7 @@
     "CheckDownloadClientForDetails": "проверете клиента за изтегляне за повече подробности",
     "ConnectionLostReconnect": "Radarr ще се опита да се свърже автоматично или можете да щракнете върху презареждане по-долу.",
     "Day": "Ден",
-    "DeletedReasonMissingFromDisk": "Whisparr не можа да намери файла на диска, така че той беше премахнат",
+    "DeletedReasonMissingFromDisk": "Hentarr не можа да намери файла на диска, така че той беше премахнат",
     "DeletedReasonUpgrade": "Файлът беше изтрит за импортиране на надстройка",
     "DestinationPath": "Път на дестинацията",
     "DestinationRelativePath": "Относителен път на дестинацията",

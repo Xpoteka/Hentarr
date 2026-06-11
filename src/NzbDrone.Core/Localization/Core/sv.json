@@ -694,7 +694,7 @@
     "ConnectionLost": "Anslutning saknas",
     "ConnectionLostReconnect": "Radarr kommer försöka ansluta automatiskt, du kan även klicka på ladda om nedan.",
     "DelayingDownloadUntil": "Försenar nedladdningen till {0} kl. {1}",
-    "DeletedReasonMissingFromDisk": "Whisparr kunde inte hitta filen på disken så den togs bort",
+    "DeletedReasonMissingFromDisk": "Hentarr kunde inte hitta filen på disken så den togs bort",
     "DeletedReasonUpgrade": "Filen raderades för att importera en uppgradering",
     "DestinationPath": "Destinationsväg",
     "DestinationRelativePath": "Destination Relativ väg",
