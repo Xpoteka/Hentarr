@@ -13,9 +13,6 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  VERSION: 2.2.0.${{ github.run_number }}
-
 permissions:
   contents: read
   packages: write
@@ -26,6 +23,20 @@ jobs:
     steps:
       - name: Check out
         uses: actions/checkout@v4
+
+      - name: Compute version
+        id: version
+        shell: bash
+        run: |
+          # AssemblyVersion must be 4-part numeric; take major.minor.patch from
+          # the tag when building a tag, otherwise use the default version line.
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            BASE="${GITHUB_REF_NAME#v}"
+            BASE="${BASE%%-*}"
+          else
+            BASE="2.2.0"
+          fi
+          echo "version=$BASE.${{ github.run_number }}" >> "$GITHUB_OUTPUT"
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -61,7 +72,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            VERSION=${{ env.VERSION }}
+            VERSION=${{ steps.version.outputs.version }}
             BRANCH=${{ github.ref_name }}
           cache-from: type=gha
           cache-to: type=gha,mode=max

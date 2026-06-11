@@ -3,7 +3,7 @@ services:
     image: ghcr.io/xpoteka/hentarr:nightly
     container_name: hentarr
     environment:
-      - TZ=Europe/Berlin
+      - TZ=${TZ:-Etc/UTC}
     ports:
       - "6969:6969"
     volumes:

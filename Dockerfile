@@ -31,9 +31,11 @@ RUN case "$TARGETARCH" in \
         sed -i "s/<AssemblyConfiguration>[\$()A-Za-z-]\+<\/AssemblyConfiguration>/<AssemblyConfiguration>$SAFE_BRANCH<\/AssemblyConfiguration>/g" src/Directory.Build.props; \
     fi && \
     dotnet msbuild -restore src/Whisparr.sln \
+        -p:SelfContained=true \
         -p:Configuration=Release \
         -p:Platform=Posix \
         -p:RuntimeIdentifiers=$RID \
+        -p:EnableWindowsTargeting=true \
         -t:PublishAllRids && \
     mv "_output/net6.0/$RID/publish" /app-bin && \
     rm -f /app-bin/ServiceInstall.* /app-bin/ServiceUninstall.* /app-bin/Whisparr.Windows.* && \
