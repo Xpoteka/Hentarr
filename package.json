@@ -1,7 +1,7 @@
 {
-  "name": "whisparr",
+  "name": "hentarr",
   "version": "2.0.0",
-  "description": "Whisparr is a PVR for Usenet and BitTorrent users",
+  "description": "Hentarr is an AniDB-based PVR for Usenet and BitTorrent users",
   "scripts": {
     "build": "webpack --config ./frontend/build/webpack.config.js",
     "prebuild": "yarn clean",

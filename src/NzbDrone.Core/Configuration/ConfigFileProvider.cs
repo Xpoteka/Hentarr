@@ -62,6 +62,9 @@ namespace NzbDrone.Core.Configuration
         string PostgresMainDb { get; }
         string PostgresLogDb { get; }
         string WhisparrMetadata { get; }
+        string AniDbApiUrl { get; }
+        string AniDbClientName { get; }
+        string AniDbTitlesUrl { get; }
         string GithubOwnerRepo { get; }
     }
 
@@ -105,6 +108,54 @@ namespace NzbDrone.Core.Configuration
                 }
 
                 return whisparrMetadata;
+            }
+        }
+
+        public string AniDbApiUrl
+        {
+            get
+            {
+                const string defaultValue = "http://api.anidb.net:9001/httpapi";
+
+                var anidbApiUrl = GetValue("AniDbApiUrl", defaultValue);
+                if (string.IsNullOrWhiteSpace(anidbApiUrl))
+                {
+                    return defaultValue;
+                }
+
+                return anidbApiUrl;
+            }
+        }
+
+        public string AniDbClientName
+        {
+            get
+            {
+                const string defaultValue = "hentarr";
+
+                var anidbClientName = GetValue("AniDbClientName", defaultValue);
+                if (string.IsNullOrWhiteSpace(anidbClientName))
+                {
+                    return defaultValue;
+                }
+
+                return anidbClientName;
+            }
+        }
+
+        public string AniDbTitlesUrl
+        {
+            get
+            {
+                const string defaultValue = "https://anidb.net/api/anime-titles.xml.gz";
+
+                var anidbTitlesUrl = GetValue("AniDbTitlesUrl", defaultValue);
+                if (string.IsNullOrWhiteSpace(anidbTitlesUrl))
+                {
+                    return defaultValue;
+                }
+
+                return anidbTitlesUrl;
             }
         }
 

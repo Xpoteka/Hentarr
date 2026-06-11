@@ -6,7 +6,6 @@ using FluentAssertions;
 using Moq;
 using NUnit.Framework;
 using NzbDrone.Common.Extensions;
-using NzbDrone.Core.MetadataSource.SkyHook;
 using NzbDrone.Core.Test.Framework;
 using NzbDrone.Core.Tv;
 using NzbDrone.Test.Common;
@@ -19,27 +18,52 @@ namespace NzbDrone.Core.Test.TvTests
         private List<Episode> _insertedEpisodes;
         private List<Episode> _updatedEpisodes;
         private List<Episode> _deletedEpisodes;
-        private Tuple<Series, List<Episode>> _myFamilyPies;
+        private Tuple<Series, List<Episode>> _fakeAnime;
 
         [OneTimeSetUp]
         public void TestFixture()
         {
-            UseRealHttp();
+            var series = new Series
+            {
+                TvdbId = 7777,
+                Title = "Fake Anime",
+                Year = 2021,
+                Status = SeriesStatusType.Continuing,
+                Seasons = new List<Season>
+                {
+                    new Season { SeasonNumber = 2021, Monitored = true }
+                }
+            };
 
-            _myFamilyPies = Mocker.Resolve<SkyHookProxy>().GetSeriesInfo(77); // My Family Pies
+            var episodes = new List<Episode>();
 
-            // Remove specials.
-            _myFamilyPies.Item2.RemoveAll(v => v.SeasonNumber == 0);
+            for (var i = 1; i <= 10; i++)
+            {
+                var airDate = new DateTime(2021, 1, i, 0, 0, 0, DateTimeKind.Utc);
+
+                episodes.Add(new Episode
+                {
+                    TvdbId = 1000 + i,
+                    SeasonNumber = 2021,
+                    AbsoluteEpisodeNumber = i,
+                    Title = "Episode " + i,
+                    AirDate = airDate.ToString(Episode.AIR_DATE_FORMAT),
+                    AirDateUtc = airDate,
+                    Ratings = new Ratings()
+                });
+            }
+
+            _fakeAnime = new Tuple<Series, List<Episode>>(series, episodes);
         }
 
         private List<Episode> GetEpisodes()
         {
-            return _myFamilyPies.Item2.JsonClone();
+            return _fakeAnime.Item2.JsonClone();
         }
 
         private Series GetSeries()
         {
-            var series = _myFamilyPies.Item1.JsonClone();
+            var series = _fakeAnime.Item1.JsonClone();
             series.Seasons = new List<Season>();
 
             return series;
