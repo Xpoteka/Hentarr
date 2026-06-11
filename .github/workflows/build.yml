@@ -236,6 +236,8 @@ jobs:
         unit_test_postgres,
         integration_test,
       ]
+    permissions:
+      contents: write
     secrets: inherit
     uses: ./.github/workflows/deploy.yml
     with:
