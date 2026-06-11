@@ -71,6 +71,43 @@ On top of the Whisparr scene parser (date/title matching), Hentarr parses absolu
 
 Date-based patterns are tried first, so scene/JAV releases keep their existing matching. Searches additionally send `Title 01` style queries to Newznab/Torznab indexers (and Fanzub with *Anime Standard Format Search*), alongside the existing date, episode-title, and external-ID queries.
 
+## Installation
+
+### Docker (recommended)
+
+Images are built automatically and published to the GitHub Container Registry:
+
+* `ghcr.io/xpoteka/hentarr:nightly` — latest build from `v2-develop`
+* `ghcr.io/xpoteka/hentarr:latest` — latest build from `v2` (stable)
+
+```bash
+docker run -d \
+  --name hentarr \
+  -p 6969:6969 \
+  -v /path/to/config:/config \
+  -v /path/to/anime:/anime \
+  -v /path/to/downloads:/downloads \
+  ghcr.io/xpoteka/hentarr:nightly
+```
+
+Or use the included [`docker-compose.yml`](docker-compose.yml):
+
+```bash
+docker compose up -d
+```
+
+The web UI is then available at `http://localhost:6969`. Images are built for `linux/amd64` and `linux/arm64`. The configuration (database, logs, settings) lives in the `/config` volume. Updates are done by pulling the new image; the built-in updater is disabled inside the container.
+
+To build the image locally instead:
+
+```bash
+docker build -t hentarr .
+```
+
+### From a release archive
+
+Pre-built archives for Windows, Linux (glibc/musl, x64/arm/arm64), macOS and FreeBSD are attached to the [GitHub releases](https://github.com/Xpoteka/Hentarr/releases). They are produced automatically by CI for every push to `v2-develop` (pre-release) and `v2` (stable). Unpack and run the `Whisparr` executable (the executable keeps the upstream name, see below).
+
 ## Known limitations
 
 * Series matching uses the AniDB main title (romaji). Releases named with an English synonym only match if the episode title or date lines up; alternate-title (synonym) matching is a future step.

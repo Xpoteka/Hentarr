@@ -1,0 +1,14 @@
+services:
+  hentarr:
+    image: ghcr.io/xpoteka/hentarr:nightly
+    container_name: hentarr
+    environment:
+      - TZ=${TZ:-Etc/UTC}
+    ports:
+      - "6969:6969"
+    volumes:
+      - ./config:/config
+      # Adjust these to your setup:
+      # - /path/to/anime:/anime
+      # - /path/to/downloads:/downloads
+    restart: unless-stopped
