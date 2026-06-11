@@ -9,6 +9,7 @@ namespace NzbDrone.Core.IndexerSearch.Definitions
         public DateOnly? ReleaseDate { get; set; }
         public string Performer { get; set; }
         public string ExternalId { get; set; }
+        public int? AbsoluteEpisodeNumber { get; set; }
 
         public override string ToString()
         {

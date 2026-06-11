@@ -116,7 +116,7 @@
     "DeleteTag": "מחק את התג",
     "DeleteTagMessageText": "האם אתה בטוח שברצונך למחוק את התג '{0}'?",
     "Deleted": "נמחק",
-    "DeletedReasonMissingFromDisk": "Whisparr לא הצליח למצוא את הקובץ בדיסק ולכן הוא הוסר",
+    "DeletedReasonMissingFromDisk": "Hentarr לא הצליח למצוא את הקובץ בדיסק ולכן הוא הוסר",
     "DeletedReasonUpgrade": "הקובץ נמחק כדי לייבא שדרוג",
     "DestinationPath": "נתיב יעד",
     "DestinationRelativePath": "מסלול יחסי יעד",

@@ -10,11 +10,13 @@ using NzbDrone.Core.Download;
 using NzbDrone.Core.HealthCheck;
 using NzbDrone.Core.Housekeeping;
 using NzbDrone.Core.ImportLists;
+using NzbDrone.Core.ImportLists.Shoko;
 using NzbDrone.Core.Indexers;
 using NzbDrone.Core.Lifecycle;
 using NzbDrone.Core.MediaFiles.Commands;
 using NzbDrone.Core.Messaging.Commands;
 using NzbDrone.Core.Messaging.Events;
+using NzbDrone.Core.MetadataSource.AniDb.Catalog;
 using NzbDrone.Core.Tv.Commands;
 using NzbDrone.Core.Update.Commands;
 
@@ -112,6 +114,18 @@ namespace NzbDrone.Core.Jobs
                     {
                         Interval = 5,
                         TypeName = typeof(ImportListSyncCommand).FullName
+                    },
+
+                    new ScheduledTask
+                    {
+                        Interval = 60,
+                        TypeName = typeof(AniDbCatalogSyncCommand).FullName
+                    },
+
+                    new ScheduledTask
+                    {
+                        Interval = 6 * 60,
+                        TypeName = typeof(ShokoSyncCommand).FullName
                     },
 
                     new ScheduledTask

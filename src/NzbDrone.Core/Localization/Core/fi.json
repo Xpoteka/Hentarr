@@ -36,7 +36,7 @@
     "RecycleBinUnableToWriteHealthCheckMessage": "Määritettyyn roskakorikansioon ei voida tallentaa: {0}. Varmista että sijainti on olemassa ja että sovelluksen suorittavalla käyttäjällä on siihen kirjoitusoikeus.",
     "BrowserReloadRequired": "Käyttöönotto vaatii selaimen sivupäivityksen.",
     "GrabSelected": "Sieppaa valitut",
-    "RemotePathMappingDownloadPermissionsHealthCheckMessage": "Whisparr näkee ladatun jakson \"{0}\", mutta ei voi käyttää sitä. Tämä johtuu todennäköisesti liian rajallisista käyttöoikeuksista.",
+    "RemotePathMappingDownloadPermissionsHealthCheckMessage": "Hentarr näkee ladatun jakson \"{0}\", mutta ei voi käyttää sitä. Tämä johtuu todennäköisesti liian rajallisista käyttöoikeuksista.",
     "AuthenticationRequiredWarning": "Etäkäytön estämiseksi ilman tunnistautumista {appName} vaatii nyt todennuksen käyttöönoton. Todennus voidaan poistaa käytöstä paikallisille osoitteille.",
     "AudioLanguages": "Äänen kielet",
     "ProfilesSettingsSummary": "Laatu-, kieli-, viive- ja julkaisuprofiilit.",

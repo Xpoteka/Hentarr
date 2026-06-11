@@ -328,7 +328,7 @@
     "DeleteSiteFolderHelpText": "फिल्म फ़ोल्डर और उसकी सामग्री को हटा दें",
     "DeleteTagMessageText": "क्या आप वाकई '{0}' टैग हटाना चाहते हैं?",
     "Deleted": "हटाए गए",
-    "DeletedReasonMissingFromDisk": "Whisparr डिस्क पर फ़ाइल खोजने में असमर्थ था इसलिए इसे हटा दिया गया था",
+    "DeletedReasonMissingFromDisk": "Hentarr डिस्क पर फ़ाइल खोजने में असमर्थ था इसलिए इसे हटा दिया गया था",
     "DeletedReasonUpgrade": "नवीनीकरण को आयात करने के लिए फ़ाइल हटा दी गई थी",
     "DestinationPath": "गंतव्य पथ",
     "DestinationRelativePath": "गंतव्य सापेक्ष पथ",

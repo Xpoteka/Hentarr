@@ -31,7 +31,16 @@ namespace NzbDrone.Core.Indexers.Fanzub
 
         public virtual IndexerPageableRequestChain GetSearchRequests(SingleEpisodeSearchCriteria searchCriteria)
         {
-            return new IndexerPageableRequestChain();
+            var pageableRequests = new IndexerPageableRequestChain();
+
+            if (Settings.AnimeStandardFormatSearch && searchCriteria.AbsoluteEpisodeNumber.HasValue)
+            {
+                var searchTitles = searchCriteria.CleanSceneTitles.SelectMany(v => GetTitleSearchStrings(v, searchCriteria.AbsoluteEpisodeNumber.Value)).ToList();
+
+                pageableRequests.Add(GetPagedRequests(string.Join("|", searchTitles)));
+            }
+
+            return pageableRequests;
         }
 
         public virtual IndexerPageableRequestChain GetSearchRequests(SeasonSearchCriteria searchCriteria)

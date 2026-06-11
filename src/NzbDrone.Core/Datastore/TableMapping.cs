@@ -26,6 +26,7 @@ using NzbDrone.Core.Jobs;
 using NzbDrone.Core.Languages;
 using NzbDrone.Core.MediaFiles;
 using NzbDrone.Core.Messaging.Commands;
+using NzbDrone.Core.MetadataSource.AniDb.Catalog;
 using NzbDrone.Core.Notifications;
 using NzbDrone.Core.Organizer;
 using NzbDrone.Core.Parser.Model;
@@ -160,6 +161,8 @@ namespace NzbDrone.Core.Datastore
 
             Mapper.Entity<UpdateHistory>("UpdateHistory").RegisterModel();
             Mapper.Entity<ImportListExclusion>("ImportListExclusions").RegisterModel();
+
+            Mapper.Entity<CatalogItem>("CatalogItems").RegisterModel();
 
             Mapper.Entity<AutoTagging.AutoTag>("AutoTagging").RegisterModel();
         }

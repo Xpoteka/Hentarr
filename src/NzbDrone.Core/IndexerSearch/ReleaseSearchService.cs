@@ -78,10 +78,11 @@ namespace NzbDrone.Core.IndexerSearch
             {
                 var searchSpec = Get<SingleEpisodeSearchCriteria>(series, episodes, monitoredOnly, userInvokedSearch, interactiveSearch);
                 var episode = episodes.First();
-                searchSpec.ReleaseDate = DateOnly.Parse(episode.AirDate);
+                searchSpec.ReleaseDate = episode.AirDate.IsNotNullOrWhiteSpace() ? DateOnly.Parse(episode.AirDate) : (DateOnly?)null;
                 searchSpec.Performer = episode.Actors.Select(p => p.Name).FirstOrDefault();
                 searchSpec.EpisodeTitle = episode.Title;
                 searchSpec.ExternalId = episode.ExternalId;
+                searchSpec.AbsoluteEpisodeNumber = episode.AbsoluteEpisodeNumber;
 
                 var decisions = await Dispatch(indexer => indexer.Fetch(searchSpec), searchSpec);
                 downloadDecisions.AddRange(decisions);
@@ -103,10 +104,11 @@ namespace NzbDrone.Core.IndexerSearch
             var downloadDecisions = new List<DownloadDecision>();
 
             var searchSpec = Get<SingleEpisodeSearchCriteria>(series, new List<Episode> { episode }, monitoredOnly, userInvokedSearch, interactiveSearch);
-            searchSpec.ReleaseDate = DateOnly.Parse(episode.AirDate);
+            searchSpec.ReleaseDate = episode.AirDate.IsNotNullOrWhiteSpace() ? DateOnly.Parse(episode.AirDate) : (DateOnly?)null;
             searchSpec.Performer = episode.Actors.Select(p => p.Name).FirstOrDefault();
             searchSpec.EpisodeTitle = episode.Title;
             searchSpec.ExternalId = episode.ExternalId;
+            searchSpec.AbsoluteEpisodeNumber = episode.AbsoluteEpisodeNumber;
 
             var decisions = await Dispatch(indexer => indexer.Fetch(searchSpec), searchSpec);
             downloadDecisions.AddRange(decisions);

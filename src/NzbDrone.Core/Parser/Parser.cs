@@ -128,6 +128,27 @@ namespace NzbDrone.Core.Parser
                     RegexOptions.IgnoreCase | RegexOptions.Compiled)
             };
 
+        // Anime releases with absolute episode numbering, tried after the date
+        // based patterns above so scene releases keep their existing matching.
+        private static readonly Regex[] AnimeReportTitleRegex = new[]
+            {
+                // Anime - [SubGroup] Title - Absolute Episode Number (e.g. [SubGroup] Series Title - 01, - 01-02, - 01v2)
+                new Regex(@"^\[(?<subgroup>.+?)\][-_. ]?(?<title>.+?)(?:[-_. ]+(?<absoluteepisode>(?<!\d+)\d{2,3}(?!\d+))(?:v\d+)?)+(?=[-_. \[\(]|$)",
+                    RegexOptions.IgnoreCase | RegexOptions.Compiled),
+
+                // Anime - Title - Absolute Episode Number [SubGroup] (e.g. Series Title - 01 [SubGroup])
+                new Regex(@"^(?<title>.+?)(?:[-_. ]+(?<absoluteepisode>(?<!\d+)\d{2,3}(?!\d+))(?:v\d+)?)+[-_. ]+\[(?<subgroup>.+?)\]",
+                    RegexOptions.IgnoreCase | RegexOptions.Compiled),
+
+                // Anime - Title Episode Absolute Episode Number (e.g. Series Title Episode 1, Series Title Ep01)
+                new Regex(@"^(?<title>.+?)[-_. ]+ep(?:isode)?[-_. ]?(?<absoluteepisode>(?<!\d+)\d{1,3}(?!\d+))(?:v\d+)?(?=[-_. \[\(]|$)",
+                    RegexOptions.IgnoreCase | RegexOptions.Compiled),
+
+                // Anime - Title - Absolute Episode Number (e.g. Series Title - 01, requires the dash separator)
+                new Regex(@"^(?<title>.+?)[-_. ]+-[-_. ]+(?<absoluteepisode>(?<!\d+)\d{2,3}(?!\d+))(?:v\d+)?(?:[-_. ]+(?<absoluteepisode>(?<!\d+)\d{2,3}(?!\d+))(?:v\d+)?)*(?=[-_. \[\(]|$)",
+                    RegexOptions.IgnoreCase | RegexOptions.Compiled)
+            };
+
         private static readonly Regex[] SpecialEpisodeTitleRegex = new Regex[]
             {
                 new Regex(@"(?<episodetitle>.+?)(?:\[.*(?:720p|1080p|2160p|HDTV|WEB|WEBRip|WEB-?DL).*\]|XXX|$)",
@@ -370,7 +391,7 @@ namespace NzbDrone.Core.Parser
                     }
                 }
 
-                foreach (var regex in ReportTitleRegex)
+                foreach (var regex in ReportTitleRegex.Concat(AnimeReportTitleRegex))
                 {
                     var match = regex.Matches(simpleTitle);
 
@@ -760,6 +781,23 @@ namespace NzbDrone.Core.Parser
 
                         lastSeasonEpisodeStringIndex = Math.Max(lastSeasonEpisodeStringIndex, seasonCapture.EndIndex());
                     }
+                }
+
+                var absoluteEpisodeCaptures = matchCollection[0].Groups["absoluteepisode"].Captures.Cast<Capture>().ToList();
+
+                if (absoluteEpisodeCaptures.Any())
+                {
+                    var first = ParseNumber(absoluteEpisodeCaptures.First().Value);
+                    var last = ParseNumber(absoluteEpisodeCaptures.Last().Value);
+
+                    if (first > last)
+                    {
+                        return null;
+                    }
+
+                    result.AbsoluteEpisodeNumbers = Enumerable.Range(first, last - first + 1).ToArray();
+
+                    lastSeasonEpisodeStringIndex = Math.Max(lastSeasonEpisodeStringIndex, absoluteEpisodeCaptures.Last().EndIndex());
                 }
             }
             else
