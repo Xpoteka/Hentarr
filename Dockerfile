@@ -16,6 +16,7 @@ ARG BRANCH=
 WORKDIR /build
 
 COPY src ./src
+COPY Logo ./Logo
 
 RUN case "$TARGETARCH" in \
         amd64) RID=linux-x64 ;; \
