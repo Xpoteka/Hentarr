@@ -3,7 +3,7 @@ import PageContent from 'Components/Page/PageContent';
 import PageContentBody from 'Components/Page/PageContentBody';
 import SettingsToolbarConnector from 'Settings/SettingsToolbarConnector';
 import translate from 'Utilities/String/translate';
-import Tpdb from './Tpdb';
+import AniDb from './AniDb';
 
 function MetadataSourceSettings() {
   return (
@@ -13,7 +13,7 @@ function MetadataSourceSettings() {
       />
 
       <PageContentBody>
-        <Tpdb />
+        <AniDb />
       </PageContentBody>
     </PageContent>
   );

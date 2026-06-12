@@ -153,9 +153,10 @@ class AddNewSeries extends Component {
             !isFetching && !error && !items.length && !!term &&
               <div className={styles.message}>
                 <div className={styles.noResults}>{translate('CouldNotFindResults', { term })}</div>
-                <div>{translate('SearchByTpdbId')}</div>
+                <div>{translate('SearchByAniDbId')}</div>
+                <div>{translate('SearchByStudio')}</div>
                 <div>
-                  <Link to="https://wiki.servarr.com/whisparr/faq#why-cant-i-add-a-new-site-when-i-know-the-tpdb-id">
+                  <Link to="https://anidb.net/anime/">
                     {translate('WhyCantIFindMySite')}
                   </Link>
                 </div>
@@ -169,7 +170,8 @@ class AddNewSeries extends Component {
                 <div className={styles.helpText}>
                   {translate('AddNewSeriesHelpText')}
                 </div>
-                <div>{translate('SearchByTpdbId')}</div>
+                <div>{translate('SearchByAniDbId')}</div>
+                <div>{translate('SearchByStudio')}</div>
               </div>
           }
 

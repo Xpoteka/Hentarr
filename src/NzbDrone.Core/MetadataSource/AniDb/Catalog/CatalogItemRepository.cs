@@ -10,6 +10,7 @@ namespace NzbDrone.Core.MetadataSource.AniDb.Catalog
     {
         CatalogItem FindByAniDbId(int anidbId);
         List<CatalogItem> GetByStudio(string studio);
+        List<CatalogItem> SearchByStudio(string query);
         List<CatalogItem> GetNextToSync(int limit);
         List<int> AllAniDbIds();
         List<string> AllStudios();
@@ -30,6 +31,14 @@ namespace NzbDrone.Core.MetadataSource.AniDb.Catalog
         public List<CatalogItem> GetByStudio(string studio)
         {
             return Query(c => c.Studio == studio);
+        }
+
+        public List<CatalogItem> SearchByStudio(string query)
+        {
+            using (var conn = _database.OpenConnection())
+            {
+                return conn.Query<CatalogItem>("SELECT * FROM \"CatalogItems\" WHERE \"Studio\" IS NOT NULL AND lower(\"Studio\") LIKE @query", new { query = "%" + query.ToLowerInvariant() + "%" }).ToList();
+            }
         }
 
         public List<CatalogItem> GetNextToSync(int limit)

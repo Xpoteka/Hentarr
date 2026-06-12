@@ -17,9 +17,9 @@ namespace NzbDrone.Integration.Test.ApiTests
         }
 
         [Test]
-        public void lookup_new_series_by_tvdbid()
+        public void lookup_new_series_by_anidb_id()
         {
-            var series = Series.Lookup("tpdb:77");
+            var series = Series.Lookup("anidb:77");
 
             series.Should().NotBeEmpty();
             series.Should().Contain(c => c.Title == "My Family Pies");

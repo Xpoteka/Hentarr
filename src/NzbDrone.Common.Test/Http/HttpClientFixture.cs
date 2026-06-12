@@ -349,7 +349,7 @@ namespace NzbDrone.Common.Test.Http
 
             var userAgent = response.Resource.Headers["User-Agent"].ToString();
 
-            userAgent.Should().Contain("Whisparr");
+            userAgent.Should().Contain(BuildInfo.AppName);
         }
 
         [TestCase("Accept", "text/xml, text/rss+xml, application/rss+xml")]

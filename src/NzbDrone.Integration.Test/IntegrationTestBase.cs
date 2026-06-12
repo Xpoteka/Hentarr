@@ -241,7 +241,7 @@ namespace NzbDrone.Integration.Test
 
             if (result == null)
             {
-                var lookup = Series.Lookup("tpdb:" + tvdbId);
+                var lookup = Series.Lookup("anidb:" + tvdbId);
                 var series = lookup.First();
                 series.QualityProfileId = 1;
                 series.Path = Path.Combine(SeriesRootFolder, series.Title);

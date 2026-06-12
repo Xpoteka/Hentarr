@@ -17,6 +17,7 @@ namespace NzbDrone.Integration.Test
         protected static int StaticPort = 6969;
 
         protected NzbDroneRunner _runner;
+        protected AniDbStubServer _aniDbStub;
 
         public override string SeriesRootFolder => GetTempDirectory("SeriesRootFolder");
 
@@ -39,8 +40,14 @@ namespace NzbDrone.Integration.Test
                 CreatePostgresDb(PostgresOptions);
             }
 
+            _aniDbStub = new AniDbStubServer();
+
             _runner = new NzbDroneRunner(LogManager.GetCurrentClassLogger(), PostgresOptions, Port);
             _runner.Kill();
+
+            _runner.ExtraConfig["AniDbApiUrl"] = _aniDbStub.ApiUrl;
+            _runner.ExtraConfig["AniDbTitlesUrl"] = _aniDbStub.TitlesUrl;
+            _runner.ExtraConfig["AniDbClientName"] = "integrationtest";
 
             _runner.Start();
         }
@@ -70,6 +77,7 @@ namespace NzbDrone.Integration.Test
 
         protected override void StopTestTarget()
         {
+            _aniDbStub?.Dispose();
             _runner.Kill();
             if (PostgresOptions?.Host != null)
             {
