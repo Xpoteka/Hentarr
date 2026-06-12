@@ -12,7 +12,7 @@ namespace NzbDrone.Core.MetadataSource.AniDb.Catalog
         int SyncBatch(int batchSize);
         void RecordAnime(AniDbAnime anime);
         List<CatalogItem> GetStudioWorks(string studio);
-        List<CatalogItem> SearchStudioWorks(string query);
+        List<CatalogItem> SearchStudioWorks(string query, int limit = 100);
         List<string> GetStudios();
     }
 
@@ -144,11 +144,12 @@ namespace NzbDrone.Core.MetadataSource.AniDb.Catalog
             return _catalogItemRepository.GetByStudio(studio);
         }
 
-        public List<CatalogItem> SearchStudioWorks(string query)
+        public List<CatalogItem> SearchStudioWorks(string query, int limit = 100)
         {
             return _catalogItemRepository.SearchByStudio(query)
                                          .OrderByDescending(c => c.Year)
                                          .ThenBy(c => c.Title, StringComparer.InvariantCultureIgnoreCase)
+                                         .Take(limit)
                                          .ToList();
         }
 

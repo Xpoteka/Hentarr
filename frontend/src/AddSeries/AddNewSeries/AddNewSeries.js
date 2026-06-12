@@ -156,7 +156,7 @@ class AddNewSeries extends Component {
                 <div>{translate('SearchByAniDbId')}</div>
                 <div>{translate('SearchByStudio')}</div>
                 <div>
-                  <Link to="https://wiki.servarr.com/whisparr/faq#why-cant-i-add-a-new-site-when-i-know-the-tpdb-id">
+                  <Link to="https://anidb.net/anime/">
                     {translate('WhyCantIFindMySite')}
                   </Link>
                 </div>

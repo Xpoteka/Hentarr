@@ -2,6 +2,7 @@ using System;
 using System.Text.RegularExpressions;
 using FluentValidation;
 using FluentValidation.Validators;
+using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Common.Extensions;
 
 namespace NzbDrone.Core.Validation
@@ -68,10 +69,10 @@ namespace NzbDrone.Core.Validation
             return ruleBuilder.WithState(v => NzbDroneValidationState.Warning);
         }
 
-        public static IRuleBuilderOptions<T, string> StartsOrEndsWithWhisparr<T>(this IRuleBuilder<T, string> ruleBuilder)
+        public static IRuleBuilderOptions<T, string> StartsOrEndsWithAppName<T>(this IRuleBuilder<T, string> ruleBuilder)
         {
             ruleBuilder.SetValidator(new NotEmptyValidator(null));
-            return ruleBuilder.SetValidator(new RegularExpressionValidator("^Whisparr|Whisparr$")).WithMessage("Must start or end with Whisparr");
+            return ruleBuilder.SetValidator(new RegularExpressionValidator($"^{BuildInfo.AppName}|{BuildInfo.AppName}$")).WithMessage($"Must start or end with {BuildInfo.AppName}");
         }
     }
 }
