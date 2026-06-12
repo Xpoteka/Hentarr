@@ -31,7 +31,7 @@ RUN case "$TARGETARCH" in \
         SAFE_BRANCH=$(echo "$BRANCH" | tr '/' '-') && \
         sed -i "s/<AssemblyConfiguration>[\$()A-Za-z-]\+<\/AssemblyConfiguration>/<AssemblyConfiguration>$SAFE_BRANCH<\/AssemblyConfiguration>/g" src/Directory.Build.props; \
     fi && \
-    dotnet msbuild -restore src/Whisparr.sln 
+    dotnet msbuild -restore src/Whisparr.sln \
         -p:SelfContained=true \
         -p:Configuration=Release \
         -p:Platform=Posix \
