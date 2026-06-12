@@ -7,6 +7,7 @@ import HeartRating from 'Components/HeartRating';
 import Icon from 'Components/Icon';
 import Label from 'Components/Label';
 import IconButton from 'Components/Link/IconButton';
+import Link from 'Components/Link/Link';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import Measure from 'Components/Measure';
 import MetadataAttribution from 'Components/MetadataAttribution';
@@ -534,11 +535,12 @@ class SeriesDetails extends Component {
                     !!network &&
                       <Label
                         className={styles.detailsLabel}
-                        title={translate('Network')}
+                        title={translate('SearchStudioWorks')}
                         size={sizes.LARGE}
                       >
-
-                        <div>
+                        <Link
+                          to={`/add/new?term=${encodeURIComponent(`studio:${network}`)}`}
+                        >
                           <Icon
                             name={icons.NETWORK}
                             size={17}
@@ -546,7 +548,7 @@ class SeriesDetails extends Component {
                           <span className={styles.qualityProfileName}>
                             {network}
                           </span>
-                        </div>
+                        </Link>
                       </Label>
                   }
 

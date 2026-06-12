@@ -10,7 +10,9 @@ namespace NzbDrone.Core.MetadataSource.AniDb.Catalog
     {
         int SeedNewTitles();
         int SyncBatch(int batchSize);
+        void RecordAnime(AniDbAnime anime);
         List<CatalogItem> GetStudioWorks(string studio);
+        List<CatalogItem> SearchStudioWorks(string query);
         List<string> GetStudios();
     }
 
@@ -108,9 +110,46 @@ namespace NzbDrone.Core.MetadataSource.AniDb.Catalog
             return synced;
         }
 
+        public void RecordAnime(AniDbAnime anime)
+        {
+            if (anime?.Series == null)
+            {
+                return;
+            }
+
+            var item = _catalogItemRepository.FindByAniDbId(anime.Series.TvdbId) ?? new CatalogItem
+            {
+                AniDbId = anime.Series.TvdbId,
+                Added = DateTime.UtcNow
+            };
+
+            item.Title = anime.Series.Title;
+            item.Year = anime.Series.Year;
+            item.Studio = anime.Series.Network;
+            item.Restricted = anime.Restricted;
+            item.LastInfoSync = DateTime.UtcNow;
+
+            if (item.Id == 0)
+            {
+                _catalogItemRepository.Insert(item);
+            }
+            else
+            {
+                _catalogItemRepository.Update(item);
+            }
+        }
+
         public List<CatalogItem> GetStudioWorks(string studio)
         {
             return _catalogItemRepository.GetByStudio(studio);
+        }
+
+        public List<CatalogItem> SearchStudioWorks(string query)
+        {
+            return _catalogItemRepository.SearchByStudio(query)
+                                         .OrderByDescending(c => c.Year)
+                                         .ThenBy(c => c.Title, StringComparer.InvariantCultureIgnoreCase)
+                                         .ToList();
         }
 
         public List<string> GetStudios()

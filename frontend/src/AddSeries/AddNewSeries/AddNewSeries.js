@@ -154,6 +154,7 @@ class AddNewSeries extends Component {
               <div className={styles.message}>
                 <div className={styles.noResults}>{translate('CouldNotFindResults', { term })}</div>
                 <div>{translate('SearchByAniDbId')}</div>
+                <div>{translate('SearchByStudio')}</div>
                 <div>
                   <Link to="https://wiki.servarr.com/whisparr/faq#why-cant-i-add-a-new-site-when-i-know-the-tpdb-id">
                     {translate('WhyCantIFindMySite')}
@@ -170,6 +171,7 @@ class AddNewSeries extends Component {
                   {translate('AddNewSeriesHelpText')}
                 </div>
                 <div>{translate('SearchByAniDbId')}</div>
+                <div>{translate('SearchByStudio')}</div>
               </div>
           }
 

@@ -6,6 +6,7 @@ using NLog;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Exceptions;
 using NzbDrone.Core.Languages;
+using NzbDrone.Core.MetadataSource.AniDb.Catalog;
 using NzbDrone.Core.Tv;
 
 namespace NzbDrone.Core.MetadataSource.AniDb
@@ -14,16 +15,19 @@ namespace NzbDrone.Core.MetadataSource.AniDb
     {
         private readonly IAniDbClient _aniDbClient;
         private readonly IAniDbTitlesService _titlesService;
+        private readonly IAniDbCatalogService _catalogService;
         private readonly ISeriesService _seriesService;
         private readonly Logger _logger;
 
         public AniDbProxy(IAniDbClient aniDbClient,
                           IAniDbTitlesService titlesService,
+                          IAniDbCatalogService catalogService,
                           ISeriesService seriesService,
                           Logger logger)
         {
             _aniDbClient = aniDbClient;
             _titlesService = titlesService;
+            _catalogService = catalogService;
             _seriesService = seriesService;
             _logger = logger;
         }
@@ -35,6 +39,18 @@ namespace NzbDrone.Core.MetadataSource.AniDb
             if (anime == null)
             {
                 throw new SeriesNotFoundException(anidbId);
+            }
+
+            // Record studio, year and the 18+ flag in the local catalog right away,
+            // so works by the same studio become searchable without waiting for the
+            // background catalog walk to reach this anime.
+            try
+            {
+                _catalogService.RecordAnime(anime);
+            }
+            catch (Exception ex)
+            {
+                _logger.Debug(ex, "Failed to record AniDB anime {0} in the catalog", anidbId);
             }
 
             return new Tuple<Series, List<Episode>>(anime.Series, anime.Episodes);
@@ -75,6 +91,20 @@ namespace NzbDrone.Core.MetadataSource.AniDb
                 }
             }
 
+            if (lowerTitle.StartsWith("studio:") || lowerTitle.StartsWith("company:"))
+            {
+                var studio = title.Split(new[] { ':' }, 2)[1].Trim();
+
+                if (studio.IsNullOrWhiteSpace())
+                {
+                    return new List<Series>();
+                }
+
+                return _catalogService.SearchStudioWorks(studio)
+                                      .Select(MapCatalogResult)
+                                      .ToList();
+            }
+
             try
             {
                 return _titlesService.Search(title)
@@ -106,6 +136,30 @@ namespace NzbDrone.Core.MetadataSource.AniDb
                 SortTitle = SeriesTitleNormalizer.Normalize(title.MainTitle, title.AniDbId),
                 TitleSlug = title.AniDbId.ToString(CultureInfo.InvariantCulture),
                 OriginalLanguage = Language.Japanese,
+                Monitored = true
+            };
+        }
+
+        private Series MapCatalogResult(CatalogItem item)
+        {
+            var series = _seriesService.FindByTvdbId(item.AniDbId);
+
+            if (series != null)
+            {
+                return series;
+            }
+
+            return new Series
+            {
+                TvdbId = item.AniDbId,
+                Title = item.Title,
+                CleanTitle = Parser.Parser.CleanSeriesTitle(item.Title),
+                SortTitle = SeriesTitleNormalizer.Normalize(item.Title, item.AniDbId),
+                TitleSlug = item.AniDbId.ToString(CultureInfo.InvariantCulture),
+                OriginalLanguage = Language.Japanese,
+                Year = item.Year,
+                Network = item.Studio,
+                Certification = item.Restricted ? "X" : null,
                 Monitored = true
             };
         }

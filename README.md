@@ -10,7 +10,7 @@ Like every \*arr, it monitors wanted episodes, interfaces with your indexers and
 
 The Whisparr/TPDB metadata proxy has been replaced with a direct AniDB client:
 
-* **Search** is served locally from the daily [AniDB titles dump](https://wiki.anidb.net/API#Anime_Titles), so searching never hits the AniDB API. You can also add titles directly with `anidb:<id>` / `aid:<id>`.
+* **Search** is served locally from the daily [AniDB titles dump](https://wiki.anidb.net/API#Anime_Titles), so searching never hits the AniDB API. You can also add titles directly with `anidb:<id>` / `aid:<id>`, and list the known works of a studio with `studio:<name>` (e.g. `studio:PoRO`), served from the local catalog.
 * **Series/episode metadata** (titles, air dates, episode lists, studio, tags, ratings, poster) is fetched from the AniDB HTTP API, rate limited to stay within AniDB's client policy. Banned responses are detected and back off automatically.
 * Regular episodes and specials are imported; credits/trailers/parodies are skipped. Seasons follow the Whisparr convention (season = air year, specials = season 0), and AniDB episode numbers are kept as absolute episode numbers.
 
@@ -31,6 +31,7 @@ A background task (*AniDB Catalog Sync*, hourly) maintains a local catalog table
 
 * The titles dump is refreshed daily and every AniDB title is seeded into the catalog, so newly published titles are discovered automatically — no manual seeding required.
 * AniDB has no "all anime by studio X" lookup; studio information only exists per anime. The catalog sync therefore **aggregates studios locally**: each run it fetches a small, rate-limit-friendly batch of anime (newest first) and records studio, year, and the 18+ flag. The studio index grows continuously in the background.
+* Every series you add or refresh is recorded in the catalog immediately. Add a title by name, then click its studio on the series details page (or search `studio:<name>`) to find the other works of that studio without waiting for the background walk.
 
 ### 3. Studio → works: the "AniDB Studio" import list
 
