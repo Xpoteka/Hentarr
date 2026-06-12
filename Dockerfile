@@ -31,7 +31,7 @@ RUN case "$TARGETARCH" in \
         SAFE_BRANCH=$(echo "$BRANCH" | tr '/' '-') && \
         sed -i "s/<AssemblyConfiguration>[\$()A-Za-z-]\+<\/AssemblyConfiguration>/<AssemblyConfiguration>$SAFE_BRANCH<\/AssemblyConfiguration>/g" src/Directory.Build.props; \
     fi && \
-    dotnet msbuild -restore src/Whisparr.sln \
+    dotnet msbuild -restore src/Whisparr.sln 
         -p:SelfContained=true \
         -p:Configuration=Release \
         -p:Platform=Posix \
@@ -54,6 +54,7 @@ ENV XDG_CONFIG_HOME=/config
 
 COPY --from=backend /app-bin /app/bin
 COPY --from=ui /build/_output/UI /app/bin/UI
+RUN apt-get update && apt-get install -y --no-install-recommends libsqlite3-0 && rm -rf /var/lib/apt/lists/*
 
 # Mark this install as docker-managed so the built-in updater is disabled
 RUN printf 'PackageAuthor=Hentarr\nUpdateMethod=Docker\nUpdateMethodMessage=Update the Docker image to receive updates\nBranch=%s\nPackageVersion=%s\n' \
