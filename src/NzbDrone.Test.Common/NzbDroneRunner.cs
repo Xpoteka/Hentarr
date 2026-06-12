@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
@@ -26,6 +27,10 @@ namespace NzbDrone.Test.Common
         public string ApiKey { get; private set; }
         public PostgresOptions PostgresOptions { get; private set; }
         public int Port { get; private set; }
+
+        // Additional config.xml values written before the instance starts,
+        // e.g. to point the AniDB client at a local stub.
+        public Dictionary<string, object> ExtraConfig { get; } = new Dictionary<string, object>();
 
         public NzbDroneRunner(Logger logger, PostgresOptions postgresOptions, int port = 6969)
         {
@@ -172,15 +177,20 @@ namespace NzbDrone.Test.Common
             // Generate and set the api key so we don't have to poll the config file
             var apiKey = Guid.NewGuid().ToString().Replace("-", "");
 
-            var xDoc = new XDocument(
-                new XDeclaration("1.0", "utf-8", "yes"),
-                new XElement(ConfigFileProvider.CONFIG_ELEMENT_NAME,
-                             new XElement(nameof(ConfigFileProvider.ApiKey), apiKey),
-                             new XElement(nameof(ConfigFileProvider.LogLevel), "trace"),
-                             new XElement(nameof(ConfigFileProvider.AnalyticsEnabled), false),
-                             new XElement(nameof(ConfigFileProvider.AuthenticationMethod), enableAuth ? "Forms" : "None"),
-                             new XElement(nameof(ConfigFileProvider.AuthenticationRequired), "DisabledForLocalAddresses"),
-                             new XElement(nameof(ConfigFileProvider.Port), Port)));
+            var root = new XElement(ConfigFileProvider.CONFIG_ELEMENT_NAME,
+                                    new XElement(nameof(ConfigFileProvider.ApiKey), apiKey),
+                                    new XElement(nameof(ConfigFileProvider.LogLevel), "trace"),
+                                    new XElement(nameof(ConfigFileProvider.AnalyticsEnabled), false),
+                                    new XElement(nameof(ConfigFileProvider.AuthenticationMethod), enableAuth ? "Forms" : "None"),
+                                    new XElement(nameof(ConfigFileProvider.AuthenticationRequired), "DisabledForLocalAddresses"),
+                                    new XElement(nameof(ConfigFileProvider.Port), Port));
+
+            foreach (var pair in ExtraConfig)
+            {
+                root.Add(new XElement(pair.Key, pair.Value));
+            }
+
+            var xDoc = new XDocument(new XDeclaration("1.0", "utf-8", "yes"), root);
 
             var data = xDoc.ToString();
 
