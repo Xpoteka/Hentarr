@@ -12,6 +12,22 @@ namespace NzbDrone.Integration.Test
     // can exercise the lookup/add flow without touching the real AniDB.
     public class AniDbStubServer : IDisposable
     {
+        private const string TitlesXml = @"<?xml version=""1.0"" encoding=""UTF-8""?>
+<animetitles>
+  <anime aid=""77"">
+    <title xml:lang=""x-jat"" type=""main"">My Family Pies</title>
+  </anime>
+  <anime aid=""126"">
+    <title xml:lang=""x-jat"" type=""main"">BrattySis</title>
+  </anime>
+  <anime aid=""350"">
+    <title xml:lang=""x-jat"" type=""main"">5K Porn</title>
+  </anime>
+  <anime aid=""351"">
+    <title xml:lang=""x-jat"" type=""main"">Bratty Sis</title>
+  </anime>
+</animetitles>";
+
         private static int _portCounter = 8745;
 
         private readonly HttpListener _listener;
@@ -128,22 +144,6 @@ namespace NzbDrone.Integration.Test
             response.OutputStream.Write(bytes, 0, bytes.Length);
             response.Close();
         }
-
-        private const string TitlesXml = @"<?xml version=""1.0"" encoding=""UTF-8""?>
-<animetitles>
-  <anime aid=""77"">
-    <title xml:lang=""x-jat"" type=""main"">My Family Pies</title>
-  </anime>
-  <anime aid=""126"">
-    <title xml:lang=""x-jat"" type=""main"">BrattySis</title>
-  </anime>
-  <anime aid=""350"">
-    <title xml:lang=""x-jat"" type=""main"">5K Porn</title>
-  </anime>
-  <anime aid=""351"">
-    <title xml:lang=""x-jat"" type=""main"">Bratty Sis</title>
-  </anime>
-</animetitles>";
 
         private static string GetAnimeXml(string aid)
         {
