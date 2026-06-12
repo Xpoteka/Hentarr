@@ -50,11 +50,12 @@ FROM mcr.microsoft.com/dotnet/runtime-deps:6.0 AS runtime
 ARG VERSION=dev
 ARG BRANCH=docker
 
+RUN apt-get update && apt-get install -y --no-install-recommends libsqlite3-0 && rm -rf /var/lib/apt/lists/*
+
 ENV XDG_CONFIG_HOME=/config
 
 COPY --from=backend /app-bin /app/bin
 COPY --from=ui /build/_output/UI /app/bin/UI
-RUN apt-get update && apt-get install -y --no-install-recommends libsqlite3-0 && rm -rf /var/lib/apt/lists/*
 
 # Mark this install as docker-managed so the built-in updater is disabled
 RUN printf 'PackageAuthor=Hentarr\nUpdateMethod=Docker\nUpdateMethodMessage=Update the Docker image to receive updates\nBranch=%s\nPackageVersion=%s\n' \
