@@ -2,6 +2,7 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import SeriesMonitoringOptionsPopoverContent from 'AddSeries/SeriesMonitoringOptionsPopoverContent';
 import SeriesTypePopoverContent from 'AddSeries/SeriesTypePopoverContent';
+import Alert from 'Components/Alert';
 import CheckInput from 'Components/Form/CheckInput';
 import Form from 'Components/Form/Form';
 import FormGroup from 'Components/Form/FormGroup';
@@ -16,8 +17,31 @@ import ModalHeader from 'Components/Modal/ModalHeader';
 import Popover from 'Components/Tooltip/Popover';
 import { icons, inputTypes, kinds, tooltipPositions } from 'Helpers/Props';
 import SeriesPoster from 'Series/SeriesPoster';
+import getErrorMessage from 'Utilities/Object/getErrorMessage';
 import translate from 'Utilities/String/translate';
 import styles from './AddNewSeriesModalContent.css';
+
+function getAddErrorMessages(addError) {
+  if (!addError) {
+    return [];
+  }
+
+  const responseJSON = addError.responseJSON;
+
+  if (Array.isArray(responseJSON)) {
+    const messages = responseJSON
+      .map((failure) => failure && failure.errorMessage)
+      .filter((message) => !!message);
+
+    if (messages.length) {
+      return messages;
+    }
+  }
+
+  const message = getErrorMessage(addError);
+
+  return message ? [message] : [];
+}
 
 class AddNewSeriesModalContent extends Component {
 
@@ -42,6 +66,7 @@ class AddNewSeriesModalContent extends Component {
       overview,
       images,
       isAdding,
+      addError,
       rootFolderPath,
       monitor,
       seriesType,
@@ -57,6 +82,9 @@ class AddNewSeriesModalContent extends Component {
       safeForWorkMode,
       ...otherProps
     } = this.props;
+
+    const hasAddError = !!addError;
+    const addErrorMessages = getAddErrorMessages(addError);
 
     return (
       <ModalContent onModalClose={onModalClose}>
@@ -85,6 +113,19 @@ class AddNewSeriesModalContent extends Component {
             }
 
             <div className={styles.info}>
+              {
+                hasAddError ?
+                  <Alert kind={kinds.DANGER}>
+                    <div>{translate('AddSiteError')}</div>
+                    {
+                      addErrorMessages.map((message, index) => {
+                        return <div key={index}>{message}</div>;
+                      })
+                    }
+                  </Alert> :
+                  null
+              }
+
               {
                 overview ?
                   <div className={styles.overview}>

@@ -112,7 +112,7 @@ class AddNewSeriesSearchResult extends Component {
 
                 <Link
                   className={styles.tvdbLink}
-                  to={`https://theporndb.net/sites/${tvdbId}`}
+                  to={`https://anidb.net/anime/${tvdbId}`}
                   onPress={this.onTVDBLinkPress}
                 >
                   <Icon

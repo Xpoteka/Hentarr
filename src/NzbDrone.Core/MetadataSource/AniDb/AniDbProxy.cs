@@ -107,9 +107,31 @@ namespace NzbDrone.Core.MetadataSource.AniDb
 
             try
             {
-                return _titlesService.Search(title)
-                                     .Select(MapSearchResult)
-                                     .ToList();
+                var results = new List<Series>();
+                var seenAniDbIds = new HashSet<int>();
+
+                // AniDB does not expose a live creator/studio search endpoint, so we
+                // match the search term against the locally built studio catalog first.
+                // This lets a plain search for a creator surface that creator's works.
+                foreach (var work in _catalogService.SearchStudioWorks(title))
+                {
+                    if (seenAniDbIds.Add(work.AniDbId))
+                    {
+                        results.Add(MapCatalogResult(work));
+                    }
+                }
+
+                // Then add any anime whose title matches the term from the AniDB
+                // titles dump, skipping anything already returned as a studio work.
+                foreach (var anidbTitle in _titlesService.Search(title))
+                {
+                    if (seenAniDbIds.Add(anidbTitle.AniDbId))
+                    {
+                        results.Add(MapSearchResult(anidbTitle));
+                    }
+                }
+
+                return results;
             }
             catch (Exception ex)
             {
