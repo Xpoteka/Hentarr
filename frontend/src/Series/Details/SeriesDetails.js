@@ -556,7 +556,7 @@ class SeriesDetails extends Component {
                     !!tvdbId && (
                       <Label
                         className={styles.detailsLabel}
-                        title={translate('TPDB ID')}
+                        title={translate('AniDbId')}
                         size={sizes.LARGE}
                       >
                         <Icon

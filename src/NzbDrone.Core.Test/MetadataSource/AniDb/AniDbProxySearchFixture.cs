@@ -76,16 +76,42 @@ namespace NzbDrone.Core.Test.MetadataSource.AniDb
         }
 
         [Test]
-        public void should_not_treat_plain_title_search_as_studio_search()
+        public void should_combine_studio_works_and_title_matches_for_plain_search()
         {
+            Mocker.GetMock<IAniDbCatalogService>()
+                  .Setup(s => s.SearchStudioWorks("Fake", It.IsAny<int>()))
+                  .Returns(_works);
+
             Mocker.GetMock<IAniDbTitlesService>()
-                  .Setup(s => s.Search("some title", It.IsAny<int>()))
+                  .Setup(s => s.Search("Fake", It.IsAny<int>()))
+                  .Returns(new List<AniDbTitle>
+                  {
+                      new AniDbTitle { AniDbId = 9988, MainTitle = "Fake Anime", AllTitles = new List<string> { "Fake Anime" } },
+                      new AniDbTitle { AniDbId = 1234, MainTitle = "Another Title", AllTitles = new List<string> { "Another Title" } }
+                  });
+
+            var result = Subject.SearchForNewSeries("Fake");
+
+            // Studio works are returned first, the duplicate 9988 from the title
+            // search is removed and the remaining title match is appended.
+            result.Should().HaveCount(3);
+            result[0].TvdbId.Should().Be(9988);
+            result[1].TvdbId.Should().Be(9989);
+            result[2].TvdbId.Should().Be(1234);
+        }
+
+        [Test]
+        public void should_return_empty_list_when_plain_search_has_no_matches()
+        {
+            Mocker.GetMock<IAniDbCatalogService>()
+                  .Setup(s => s.SearchStudioWorks("nothing", It.IsAny<int>()))
+                  .Returns(new List<CatalogItem>());
+
+            Mocker.GetMock<IAniDbTitlesService>()
+                  .Setup(s => s.Search("nothing", It.IsAny<int>()))
                   .Returns(new List<AniDbTitle>());
 
-            Subject.SearchForNewSeries("some title").Should().BeEmpty();
-
-            Mocker.GetMock<IAniDbCatalogService>()
-                  .Verify(s => s.SearchStudioWorks(It.IsAny<string>(), It.IsAny<int>()), Times.Never());
+            Subject.SearchForNewSeries("nothing").Should().BeEmpty();
         }
     }
 }

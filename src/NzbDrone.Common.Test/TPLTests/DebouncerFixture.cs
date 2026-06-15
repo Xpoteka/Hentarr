@@ -32,7 +32,7 @@ namespace NzbDrone.Common.Test.TPLTests
 
             counter.Count.Should().Be(0);
 
-            Thread.Sleep(100);
+            Thread.Sleep(500);
 
             counter.Count.Should().Be(1);
         }
@@ -50,13 +50,13 @@ namespace NzbDrone.Common.Test.TPLTests
 
             counter.Count.Should().Be(0);
 
-            Thread.Sleep(200);
+            Thread.Sleep(500);
 
             debounceFunction.Execute();
             debounceFunction.Execute();
             debounceFunction.Execute();
 
-            Thread.Sleep(200);
+            Thread.Sleep(500);
 
             counter.Count.Should().Be(2);
         }
@@ -73,14 +73,14 @@ namespace NzbDrone.Common.Test.TPLTests
             debounceFunction.Execute();
             debounceFunction.Execute();
 
-            Thread.Sleep(100);
+            Thread.Sleep(500);
 
             counter.Count.Should().Be(0);
 
             debounceFunction.Execute();
             debounceFunction.Execute();
 
-            Thread.Sleep(100);
+            Thread.Sleep(500);
 
             counter.Count.Should().Be(0);
 
@@ -90,7 +90,7 @@ namespace NzbDrone.Common.Test.TPLTests
 
             counter.Count.Should().Be(0);
 
-            Thread.Sleep(100);
+            Thread.Sleep(500);
 
             counter.Count.Should().Be(1);
         }
@@ -110,13 +110,13 @@ namespace NzbDrone.Common.Test.TPLTests
 
             debounceFunction.Resume();
 
-            Thread.Sleep(100);
+            Thread.Sleep(500);
 
             counter.Count.Should().Be(0);
 
             debounceFunction.Resume();
 
-            Thread.Sleep(100);
+            Thread.Sleep(500);
 
             counter.Count.Should().Be(1);
         }

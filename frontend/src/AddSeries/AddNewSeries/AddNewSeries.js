@@ -102,7 +102,7 @@ class AddNewSeries extends Component {
               className={styles.searchInput}
               name="seriesLookup"
               value={term}
-              placeholder="eg. Brazzers, tpdb:####"
+              placeholder="eg. anime title, studio:PoRO, anidb:9988"
               autoFocus={true}
               onChange={this.onSearchInputChange}
             />
@@ -127,7 +127,7 @@ class AddNewSeries extends Component {
             !isFetching && !!error ?
               <div className={styles.message}>
                 <div className={styles.helpText}>
-                  {translate('AddNewSeriesError')}
+                  {translate('AddNewSiteError')}
                 </div>
                 <div>{getErrorMessage(error)}</div>
               </div> : null
@@ -168,7 +168,7 @@ class AddNewSeries extends Component {
               null :
               <div className={styles.message}>
                 <div className={styles.helpText}>
-                  {translate('AddNewSeriesHelpText')}
+                  {translate('AddNewSiteHelpText')}
                 </div>
                 <div>{translate('SearchByAniDbId')}</div>
                 <div>{translate('SearchByStudio')}</div>
