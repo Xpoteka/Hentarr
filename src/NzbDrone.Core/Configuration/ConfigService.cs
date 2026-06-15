@@ -138,7 +138,10 @@ namespace NzbDrone.Core.Configuration
                 return GetValue("AniDbClientName", string.IsNullOrWhiteSpace(configFileClientName) ? "hentarr" : configFileClientName);
             }
 
-            set { SetValue("AniDbClientName", value); }
+            set
+            {
+                SetValue("AniDbClientName", value);
+            }
         }
 
         public int AniDbClientVersion
