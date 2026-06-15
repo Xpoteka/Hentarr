@@ -22,24 +22,27 @@ namespace NzbDrone.Core.MetadataSource.AniDb
         private readonly IHttpClient _httpClient;
         private readonly IRateLimitService _rateLimitService;
         private readonly IConfigFileProvider _configFileProvider;
+        private readonly IConfigService _configService;
         private readonly Logger _logger;
 
         public AniDbClient(IHttpClient httpClient,
                            IRateLimitService rateLimitService,
                            IConfigFileProvider configFileProvider,
+                           IConfigService configService,
                            Logger logger)
         {
             _httpClient = httpClient;
             _rateLimitService = rateLimitService;
             _configFileProvider = configFileProvider;
+            _configService = configService;
             _logger = logger;
         }
 
         public AniDbAnime GetAnime(int anidbId)
         {
             var request = new HttpRequestBuilder(_configFileProvider.AniDbApiUrl)
-                .AddQueryParam("client", _configFileProvider.AniDbClientName)
-                .AddQueryParam("clientver", "1")
+                .AddQueryParam("client", _configService.AniDbClientName)
+                .AddQueryParam("clientver", _configService.AniDbClientVersion.ToString())
                 .AddQueryParam("protover", "1")
                 .AddQueryParam("request", "anime")
                 .AddQueryParam("aid", anidbId.ToString())

@@ -14,16 +14,24 @@ The Whisparr/TPDB metadata proxy has been replaced with a direct AniDB client:
 * **Series/episode metadata** (titles, air dates, episode lists, studio, tags, ratings, poster) is fetched from the AniDB HTTP API, rate limited to stay within AniDB's client policy. Banned responses are detected and back off automatically.
 * Regular episodes and specials are imported; credits/trailers/parodies are skipped. Seasons follow the Whisparr convention (season = air year, specials = season 0), and AniDB episode numbers are kept as absolute episode numbers.
 
-Configuration (optional, in `config.xml`):
+**AniDB login (client registration):** AniDB requires every HTTP API client to be
+registered. Register your own client on [anidb.net](https://anidb.net/software/add),
+then set the **Client Name** (and, if AniDB assigned one, the **Client Version**)
+under **Settings → Metadata Source**. These are stored in the database, so there is
+no need to edit `config.xml` or restart the container. Hentarr shows a health check
+notice while the default client name (`hentarr`) is still in use.
+
+Advanced/operational options can still be set in `config.xml`:
 
 ```xml
 <AniDbApiUrl>http://api.anidb.net:9001/httpapi</AniDbApiUrl>
-<AniDbClientName>hentarr</AniDbClientName>
 <AniDbTitlesUrl>https://anidb.net/api/anime-titles.xml.gz</AniDbTitlesUrl>
 <AniDbCatalogBatchSize>40</AniDbCatalogBatchSize>
 ```
 
-> **Note:** AniDB requires HTTP API clients to be registered. Register your own client name on [anidb.net](https://anidb.net/software/add) and set it as `AniDbClientName` before heavy use. Hentarr shows a health check notice while the default client name is in use.
+> **Note:** A `<AniDbClientName>` value in `config.xml` is still honoured as a fallback
+> when no client name has been set in the UI, so existing installs keep working after
+> upgrading.
 
 ### 2. Catalog: knowing what exists
 

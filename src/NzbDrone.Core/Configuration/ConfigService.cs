@@ -24,13 +24,15 @@ namespace NzbDrone.Core.Configuration
     {
         private readonly IConfigRepository _repository;
         private readonly IEventAggregator _eventAggregator;
+        private readonly IConfigFileProvider _configFileProvider;
         private readonly Logger _logger;
         private static Dictionary<string, string> _cache;
 
-        public ConfigService(IConfigRepository repository, IEventAggregator eventAggregator, Logger logger)
+        public ConfigService(IConfigRepository repository, IEventAggregator eventAggregator, IConfigFileProvider configFileProvider, Logger logger)
         {
             _repository = repository;
             _eventAggregator = eventAggregator;
+            _configFileProvider = configFileProvider;
             _logger = logger;
             _cache = new Dictionary<string, string>();
         }
@@ -121,6 +123,23 @@ namespace NzbDrone.Core.Configuration
             get { return GetValueInt("MinimumAge", 0); }
 
             set { SetValue("MinimumAge", value); }
+        }
+
+        public string AniDbClientName
+        {
+            // Falls back to the config.xml value (default "hentarr") when the user
+            // has not set a client name in the UI yet, so existing container configs
+            // keep working after the upgrade.
+            get { return GetValue("AniDbClientName", _configFileProvider.AniDbClientName); }
+
+            set { SetValue("AniDbClientName", value); }
+        }
+
+        public int AniDbClientVersion
+        {
+            get { return GetValueInt("AniDbClientVersion", 1); }
+
+            set { SetValue("AniDbClientVersion", value); }
         }
 
         public ProperDownloadTypes DownloadPropersAndRepacks
