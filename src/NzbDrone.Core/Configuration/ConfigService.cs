@@ -129,8 +129,14 @@ namespace NzbDrone.Core.Configuration
         {
             // Falls back to the config.xml value (default "hentarr") when the user
             // has not set a client name in the UI yet, so existing container configs
-            // keep working after the upgrade.
-            get { return GetValue("AniDbClientName", _configFileProvider.AniDbClientName); }
+            // keep working after the upgrade. Guard against a null/empty config.xml
+            // value so the default passed to GetValue is never null.
+            get
+            {
+                var configFileClientName = _configFileProvider.AniDbClientName;
+
+                return GetValue("AniDbClientName", string.IsNullOrWhiteSpace(configFileClientName) ? "hentarr" : configFileClientName);
+            }
 
             set { SetValue("AniDbClientName", value); }
         }
