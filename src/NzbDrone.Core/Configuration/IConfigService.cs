@@ -52,6 +52,10 @@ namespace NzbDrone.Core.Configuration
         int MaximumSize { get; set; }
         int MinimumAge { get; set; }
 
+        // Metadata Source (AniDB)
+        string AniDbClientName { get; set; }
+        int AniDbClientVersion { get; set; }
+
         // UI
         int FirstDayOfWeek { get; set; }
         string CalendarWeekColumnHeader { get; set; }

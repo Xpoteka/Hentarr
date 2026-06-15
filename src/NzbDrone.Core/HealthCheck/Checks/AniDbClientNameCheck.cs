@@ -11,19 +11,19 @@ namespace NzbDrone.Core.HealthCheck.Checks
     {
         private const string DefaultClientName = "hentarr";
 
-        private readonly IConfigFileProvider _configFileProvider;
+        private readonly IConfigService _configService;
 
-        public AniDbClientNameCheck(IConfigFileProvider configFileProvider, ILocalizationService localizationService)
+        public AniDbClientNameCheck(IConfigService configService, ILocalizationService localizationService)
             : base(localizationService)
         {
-            _configFileProvider = configFileProvider;
+            _configService = configService;
         }
 
         public override HealthCheck Check()
         {
             // AniDB requires HTTP API clients to be registered, everyone should
             // use their own registered client name instead of the default.
-            if (_configFileProvider.AniDbClientName == DefaultClientName)
+            if (_configService.AniDbClientName == DefaultClientName)
             {
                 return new HealthCheck(GetType(), HealthCheckResult.Notice, _localizationService.GetLocalizedString("AniDbClientNameHealthCheckMessage"), "#anidb-client-name");
             }
