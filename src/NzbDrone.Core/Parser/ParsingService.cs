@@ -233,6 +233,33 @@ namespace NzbDrone.Core.Parser
             {
                 remoteEpisode.Series = series;
 
+                // Fork: AniList entries have a single season, so a release named after the series without any numbers
+                // belongs to that season, and for a single-episode entry it is that episode rather than a season pack.
+                if (parsedEpisodeInfo.IsSeasonTitle && !remoteEpisode.MappedSeasonNumber.HasValue)
+                {
+                    var seasons = series.Seasons.Where(s => s.SeasonNumber > 0).ToList();
+
+                    if (seasons.Count == 1)
+                    {
+                        var seasonEpisodes = _episodeService.GetEpisodesBySeason(series.Id, seasons[0].SeasonNumber);
+
+                        if (seasonEpisodes.Count == 1)
+                        {
+                            parsedEpisodeInfo = parsedEpisodeInfo.JsonClone();
+                            parsedEpisodeInfo.FullSeason = false;
+                            parsedEpisodeInfo.IsSeasonTitle = false;
+                            parsedEpisodeInfo.SeasonNumber = seasons[0].SeasonNumber;
+                            parsedEpisodeInfo.EpisodeNumbers = new[] { seasonEpisodes[0].EpisodeNumber };
+                            parsedEpisodeInfo.AbsoluteEpisodeNumbers = seasonEpisodes[0].AbsoluteEpisodeNumber.HasValue
+                                ? new[] { seasonEpisodes[0].AbsoluteEpisodeNumber.Value }
+                                : Array.Empty<int>();
+                            remoteEpisode.ParsedEpisodeInfo = parsedEpisodeInfo;
+                        }
+
+                        remoteEpisode.MappedSeasonNumber = seasons[0].SeasonNumber;
+                    }
+                }
+
                 // Non-official order doesn't support remapped season numbers, clearing it out
                 if (series.SeasonType != SeasonType.Official)
                 {

@@ -46,6 +46,7 @@ Search terms: a plain title, `anilist:<id>`, `mal:<id>`. `tvdb:<id>` is treated 
 | `src/NzbDrone.Core/DataAugmentation/AniList/AniListSceneMappingProvider.cs` | Emits alternate titles as scene mappings |
 | `src/NzbDrone.Core/DataAugmentation/AniList/AniListSceneMappingTrigger.cs` | Queues a scene mapping update on every series add/import |
 | `src/NzbDrone.Core/DataAugmentation/AniList/AniListSceneMappingCleanup.cs` | Purges leftover TVDB-keyed mappings at startup |
+| `src/NzbDrone.Core/MediaFiles/EpisodeImport/Aggregation/Aggregators/AggregateSingleEpisodeFallback.cs` | Maps a numberless video file to the only episode of a single-episode entry on import |
 | `src/NzbDrone.Core.Test/MetadataSource/AniList/*`, `src/NzbDrone.Core.Test/DataAugmentation/AniList/*`, `src/NzbDrone.Core.Test/IndexerTests/NewznabTests/NewznabRequestGeneratorForkFixture.cs`, `src/NzbDrone.Core.Test/Files/AniList/*.json` | Unit tests and recorded AniList fixtures |
 | `Dockerfile`, `.dockerignore` | Container build |
 | `FORK.md` | This file |
@@ -59,8 +60,10 @@ Every edit is marked with a `// Fork:` comment or an `[Ignore("Fork: ...")]` att
 | `src/NzbDrone.Core/MetadataSource/SkyHook/SkyHookProxy.cs` | No longer implements `IProvideSeriesInfo`, `ISearchForNewSeries` (class kept, unused) |
 | `src/NzbDrone.Core/DataAugmentation/Scene/ServicesProvider.cs` | No longer implements `ISceneMappingProvider` |
 | `src/NzbDrone.Core/DataAugmentation/Xem/XemService.cs` | No longer implements `ISceneMappingProvider` or handles series events |
-| `src/NzbDrone.Core/Indexers/Newznab/NewznabRequestGenerator.cs` | `ExternalIdSearchesEnabled => false` gates the five `Supports*Search` flags |
+| `src/NzbDrone.Core/Indexers/Newznab/NewznabRequestGenerator.cs` | `ExternalIdSearchesEnabled => false` gates the five `Supports*Search` flags; anime season searches send a plain title query when the standard season format is off |
 | `src/NzbDrone.Core/DecisionEngine/DownloadDecisionMaker.cs` | Passes no ids to `IParsingService.Map` |
+| `src/NzbDrone.Core/Parser/ParsingService.cs` | A release named after the series with no numbers maps to the single season; for a single-episode entry it becomes that episode instead of a season pack |
+| `src/NzbDrone.Core/MediaFiles/EpisodeImport/Aggregation/AggregationService.cs` | Unparsed media files are rejected after the aggregators ran, so the single-episode fallback can map them |
 | `src/NzbDrone.Common/Instrumentation/NzbDroneLogger.cs` | Sentry target only registered when `ForkSettings.CrashReportingEnabled` |
 | `src/NzbDrone.Core/Update/UpdatePackageProvider.cs` | Returns no updates when `ForkSettings.UpdaterEnabled` is false |
 | `src/NzbDrone.Core/Configuration/ConfigFileProvider.cs` | `AnalyticsEnabled` and `UpdateAutomatically` forced false |
@@ -72,6 +75,27 @@ Every edit is marked with a `// Fork:` comment or an `[Ignore("Fork: ...")]` att
 | `frontend/src/AddSeries/AddNewSeries/AddNewSeriesSearchResult.tsx` | Same |
 | `frontend/src/AddSeries/ImportSeries/Import/SelectSeries/ImportSeriesSearchResult.tsx` | Same |
 | `frontend/src/AddSeries/AddNewSeries/AddNewSeries.tsx` | Search box hint mentions `anilist:` and `mal:` |
+
+## Tested against real indexers (2026-10-09)
+
+Searched through Prowlarr (sukebei.nyaa.si, Tokyo Toshokan, Nyaa.si) for eleven titles from T-Rex and Pink Pineapple.
+What worked: title and synonym searches with absolute numbers, batch releases named after the title (`[Abysswalker] Joshi
+Luck! (じょしラク!) [720p][1080p][WEB-DL]`, `euphoria (BD 1080p H264 AAC)`), numberless single-episode releases
+(`[007nF] Aki Sora (BD 1920x1080 x264 10bits AAC)` maps to episode 1), `×` titles (`Pretty x Cation`), import of
+numbered and numberless files, renaming with the anime format, and refresh keeping files.
+
+Operational notes:
+
+* Most hentai fansub releases carry no resolution token and parse as quality **Unknown**. Allow Unknown in the quality
+  profile (it is off in the defaults), otherwise releases such as `[SakuraCircle] Joshi Luck! - 01-02 (OVA...) - English
+  Softsubs` are rejected.
+* Leave **Anime Standard Format Search** off on the indexers; sukebei only supports plain `q` searches.
+* Prowlarr rate-limits Tokyo Toshokan; expect occasional `429` and a one-minute back-off.
+
+Known parser gaps seen in results (upstream parser, not changed): `Title 01 - 04`, `Title Ep.01-02`, `Title__Ep 01`,
+titles prefixed with a Japanese title and `/`, and `[Group] Title [fanservice compilation]`, which the single-episode rule
+maps to episode 1. A release profile with "must not contain: compilation, preview, PV" avoids the last one. AniList has
+separate entries with the same title (Aki-Sora TV series and OVA), so releases of one can match the other.
 
 ## Known broken or degraded
 

@@ -42,15 +42,11 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport.Aggregation
         {
             var isMediaFile = MediaFileExtensions.Extensions.Contains(Path.GetExtension(localEpisode.Path));
 
-            if (localEpisode.DownloadClientEpisodeInfo == null &&
-                localEpisode.FolderEpisodeInfo == null &&
-                localEpisode.FileEpisodeInfo == null)
-            {
-                if (isMediaFile)
-                {
-                    throw new AugmentingFailedException("Unable to parse episode info from path: {0}", localEpisode.Path);
-                }
-            }
+            // Fork: an unparsed media file is no longer rejected before the aggregators run, so that
+            // AggregateSingleEpisodeFallback can map numberless files of single-episode entries. It is rejected below instead.
+            var unparsed = localEpisode.DownloadClientEpisodeInfo == null &&
+                           localEpisode.FolderEpisodeInfo == null &&
+                           localEpisode.FileEpisodeInfo == null;
 
             localEpisode.Size = _diskProvider.GetFileSize(localEpisode.Path);
             localEpisode.SceneName = localEpisode.SceneSource ? SceneNameCalculator.GetSceneName(localEpisode) : null;
@@ -72,6 +68,11 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport.Aggregation
 
                     _logger.Warn(ex, message);
                 }
+            }
+
+            if (unparsed && isMediaFile && localEpisode.FileEpisodeInfo == null)
+            {
+                throw new AugmentingFailedException("Unable to parse episode info from path: {0}", localEpisode.Path);
             }
 
             return localEpisode;

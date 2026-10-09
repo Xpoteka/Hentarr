@@ -104,6 +104,26 @@ namespace NzbDrone.Core.Test.IndexerTests.NewznabTests
         }
 
         [Test]
+        public void should_search_anime_season_by_plain_title_when_standard_format_is_off()
+        {
+            var criteria = new AnimeSeasonSearchCriteria
+            {
+                Series = _series,
+                SceneTitles = new List<string> { "euphoria", "Euphoria OVA" },
+                SeasonNumber = 1
+            };
+
+            Subject.Settings.AnimeStandardFormatSearch = false;
+
+            var queries = AllQueries(Subject.GetSearchRequests(criteria));
+
+            queries.Should().HaveCount(2);
+            queries.Should().Contain(q => q.Contains("t=search") && q.EndsWith("&q=euphoria"));
+            queries.Should().Contain(q => q.Contains("t=search") && q.EndsWith("&q=Euphoria%20OVA"));
+            queries.Should().OnlyContain(q => !q.Contains("season="));
+        }
+
+        [Test]
         public void should_page_title_searches()
         {
             var criteria = new AnimeEpisodeSearchCriteria

@@ -242,6 +242,16 @@ namespace NzbDrone.Core.Test.MetadataSource.AniList
             titles.Should().BeEquivalentTo(new[] { "Autumn Sky", "Akisora", "Aki Sora (2009)" });
         }
 
+        [Test]
+        public void should_add_spelled_out_variant_for_multiplication_sign_titles()
+        {
+            var media = LoadMedia("media_6987_single_episode.json");
+            media.Title.Romaji = "PRETTY×CATION THE ANIMATION";
+            media.Synonyms = new System.Collections.Generic.List<string>();
+
+            AniListMapper.GetAlternateTitles(media).Should().BeEquivalentTo(new[] { "PRETTY x CATION THE ANIMATION" });
+        }
+
         [TestCase("Akisora", true)]
         [TestCase("Itadaki! Seieki♥", false)]
         [TestCase("Résumé", true)]

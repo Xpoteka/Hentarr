@@ -131,6 +131,9 @@ namespace NzbDrone.Core.MetadataSource.AniList
                 candidates.AddRange(media.Synonyms);
             }
 
+            // "PRETTY×CATION" is released as "Pretty x Cation", so add a variant with the multiplication sign spelled out.
+            candidates.AddRange(candidates.Where(c => c != null && c.Contains('×')).Select(c => c.Replace("×", " x ")).ToList());
+
             return candidates.Where(IsUsefulSearchTitle)
                              .Select(t => t.Trim())
                              .Where(t => !t.Equals(mainTitle, StringComparison.InvariantCultureIgnoreCase))

@@ -492,6 +492,15 @@ namespace NzbDrone.Core.Indexers.Newznab
                         "tvsearch",
                         $"&q={NewsnabifyTitle(queryTitle)}&season={NewznabifySeasonNumber(searchCriteria.SeasonNumber)}"));
                 }
+                else
+                {
+                    // Fork: without season aliases or the standard format upstream sends nothing for an anime season search.
+                    // Hentai OVAs are released as batches named after the title, so search the plain title.
+                    pageableRequests.Add(GetPagedRequests(MaxPages,
+                        Settings.AnimeCategories,
+                        "search",
+                        $"&q={NewsnabifyTitle(queryTitle)}"));
+                }
             }
 
             return pageableRequests;
