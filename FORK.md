@@ -100,6 +100,12 @@ Operational notes:
 * Most hentai fansub releases carry no resolution token and parse as quality **Unknown**. Allow Unknown in the quality
   profile (it is off in the defaults), otherwise releases such as `[SakuraCircle] Joshi Luck! - 01-02 (OVA...) - English
   Softsubs` are rejected.
+* For English-subtitled releases use three custom formats on the quality profile, with minimum score 0 and cutoff
+  score 100: "English Subs" +100 (release title regex `(?i)(eng(lish)?[ ._-]?(soft|hard)?[ ._-]?subs?|engsubs?|eng-subs?|\[eng\]|english[ ._-]?(dub|subtitles)|\bsubbed\b|\bsoftsubs?\b|\bhardsubs?\b|sakuracircle)`),
+  "Non-English Subs" -1000 (`(?i)(espa[nñ]ol|sub[ ._-]?esp|latino|castellano|vostfr|french|german|deutsch|russian|\brus\b|italian|\bita\b|portugu[eê]s|pt-br|chinese|简|繁|中文|字幕|\bcht\b|\bchs\b|gb_cn|polish|turkish|indonesia|thai|korean|arabic)`)
+  and "Raw (no subs)" -1000 (`(?i)(\[raws?\]|\(raw\)|[ ._-]raws?[ ._\]\)-]|\bno[ ._-]?subs?\b|\bunsub(bed)?\b)`). Keep each format to one
+  condition type: Sonarr ANDs different condition types, so a language condition next to the title regex matches nothing
+  because these releases parse as Japanese.
 * Leave **Anime Standard Format Search** off on the indexers; sukebei only supports plain `q` searches.
 * Prowlarr rate-limits Tokyo Toshokan; expect occasional `429` and a one-minute back-off.
 
