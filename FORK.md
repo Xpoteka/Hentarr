@@ -31,7 +31,8 @@ Nothing in this fork goes upstream. Do not open issues or pull requests against 
 
 When a series is added, every related AniList entry (sequel, prequel, side story, spin-off, parent, alternative,
 summary) that passes the adult filter is added as well, with the same root folder, profile, monitoring and tags. Each
-added entry repeats the step, so a whole franchise such as Taimanin comes in with one add. Entries already in the
+added entry repeats the step, so a whole franchise such as Taimanin comes in with one add. AniList relations are not symmetric, so a second pass searches the franchise word of the title (for example
+"Taimanin") and adds entries whose own relations point back at the library. Entries already in the
 library or on the import list exclusions are skipped, so deleting one with "add exclusion" keeps it out. The
 `AddRelatedSeries` command (System → Tasks, or `POST /api/v3/command {"name":"AddRelatedSeries"}`, optionally with
 `seriesId`) runs the same expansion for titles that are already in the library.

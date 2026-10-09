@@ -77,6 +77,7 @@ namespace NzbDrone.Core.MetadataSource.AniList
             try
             {
                 relations = _client.GetRelations(series.TvdbId);
+                relations.AddRange(FindEntriesLinkingBack(series));
             }
             catch (Exception ex)
             {
@@ -84,7 +85,7 @@ namespace NzbDrone.Core.MetadataSource.AniList
                 return added;
             }
 
-            foreach (var relation in relations)
+            foreach (var relation in relations.DistinctBy(r => r.Node?.Id ?? 0))
             {
                 var node = relation.Node;
 
@@ -136,6 +137,67 @@ namespace NzbDrone.Core.MetadataSource.AniList
             }
 
             return added;
+        }
+
+        // AniList relations are not symmetric: Taimanin Yukikaze lists Taimanin Asagi as an alternative, but Asagi does not
+        // list Yukikaze. Search the franchise word of the title and keep entries whose own relations point at the library.
+        private List<AniListRelationEdge> FindEntriesLinkingBack(Series series)
+        {
+            var result = new List<AniListRelationEdge>();
+            var term = GetFranchiseTerm(series.Title);
+
+            if (term.IsNullOrWhiteSpace())
+            {
+                return result;
+            }
+
+            var libraryIds = _seriesService.AllSeriesTvdbIds().Values.ToHashSet();
+            libraryIds.Add(series.TvdbId);
+
+            var candidates = _client.Search(term, _options.AdultFilter)
+                                    .Where(m => m.Id != series.TvdbId && !libraryIds.Contains(m.Id))
+                                    .Where(m => AniListMapper.GetMainTitle(m).StartsWith(term, StringComparison.InvariantCultureIgnoreCase))
+                                    .Take(25)
+                                    .ToList();
+
+            foreach (var candidate in candidates)
+            {
+                var back = _client.GetRelations(candidate.Id)
+                                  .FirstOrDefault(r => r.Node != null && libraryIds.Contains(r.Node.Id) && FollowedRelationTypes.Contains(r.RelationType?.ToUpperInvariant()));
+
+                if (back != null)
+                {
+                    candidate.Type ??= "ANIME";
+                    result.Add(new AniListRelationEdge { RelationType = back.RelationType, Node = candidate });
+                }
+            }
+
+            return result;
+        }
+
+        public static string GetFranchiseTerm(string title)
+        {
+            if (title.IsNullOrWhiteSpace())
+            {
+                return null;
+            }
+
+            var head = title.Split(':')[0].Trim();
+            var words = head.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+            if (words.Length == 0)
+            {
+                return null;
+            }
+
+            var term = words[0];
+
+            if (term.Length < 4 && words.Length > 1)
+            {
+                term = $"{words[0]} {words[1]}";
+            }
+
+            return term.Length >= 3 ? term : null;
         }
 
         private bool IsWanted(AniListRelationEdge relation)

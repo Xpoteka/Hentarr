@@ -70,6 +70,9 @@ namespace NzbDrone.Core.Test.MetadataSource.AniList
                   });
 
             Mocker.GetMock<ISeriesService>().Setup(s => s.FindByTvdbId(It.IsAny<int>())).Returns((Series)null);
+            Mocker.GetMock<ISeriesService>().Setup(s => s.AllSeriesTvdbIds()).Returns(new Dictionary<int, int> { { 5, 3479 } });
+            Mocker.GetMock<IAniListGraphQlClient>().Setup(c => c.Search(It.IsAny<string>(), It.IsAny<AniListAdultFilter>())).Returns(new List<AniListMedia>());
+            Mocker.GetMock<IAniListGraphQlClient>().Setup(c => c.GetRelations(It.Is<int>(i => i != 3479))).Returns(new List<AniListRelationEdge>());
             Mocker.GetMock<IImportListExclusionService>().Setup(s => s.FindByTvdbId(It.IsAny<int>())).Returns((ImportListExclusion)null);
             Mocker.GetMock<IRootFolderService>().Setup(s => s.GetBestRootFolderPath("/hentai/Taimanin Asagi")).Returns("/hentai");
 
@@ -119,6 +122,35 @@ namespace NzbDrone.Core.Test.MetadataSource.AniList
 
             _added.Select(s => s.TvdbId).Should().Contain(4242);
             _added.Select(s => s.TvdbId).Should().NotContain(93291);
+        }
+
+        [Test]
+        public void should_add_entries_that_link_back_to_the_library()
+        {
+            var yukikaze = new AniListMedia { Id = 20860, Type = "ANIME", IsAdult = true, Title = new AniListTitle { Romaji = "Taimanin Yukikaze" } };
+            var unrelated = new AniListMedia { Id = 777, Type = "ANIME", IsAdult = true, Title = new AniListTitle { Romaji = "Taimanin Something Else" } };
+            var otherName = new AniListMedia { Id = 778, Type = "ANIME", IsAdult = true, Title = new AniListTitle { Romaji = "Not In Franchise" } };
+
+            Mocker.GetMock<IAniListGraphQlClient>().Setup(c => c.Search("Taimanin", AniListAdultFilter.Adult)).Returns(new List<AniListMedia> { yukikaze, unrelated, otherName });
+            Mocker.GetMock<IAniListGraphQlClient>().Setup(c => c.GetRelations(20860)).Returns(new List<AniListRelationEdge> { Edge("ALTERNATIVE", 3479, "Taimanin Asagi") });
+            Mocker.GetMock<IAniListGraphQlClient>().Setup(c => c.GetRelations(777)).Returns(new List<AniListRelationEdge> { Edge("SEQUEL", 999, "Elsewhere") });
+
+            Subject.HandleAsync(new SeriesAddedEvent(_parent));
+
+            _added.Select(s => s.TvdbId).Should().Contain(20860);
+            _added.Select(s => s.TvdbId).Should().NotContain(777);
+            _added.Select(s => s.TvdbId).Should().NotContain(778);
+            Mocker.GetMock<IAniListGraphQlClient>().Verify(c => c.GetRelations(778), Times.Never());
+        }
+
+        [TestCase("Taimanin Asagi", "Taimanin")]
+        [TestCase("Pure x Holic: Junketsu Otome", "Pure")]
+        [TestCase("Makai Kishi Ingrid: Re", "Makai")]
+        [TestCase("JK Bitch ni Shiboraretai", "JK Bitch")]
+        [TestCase("", null)]
+        public void should_derive_franchise_term(string title, string expected)
+        {
+            AniListRelatedSeriesService.GetFranchiseTerm(title).Should().Be(expected);
         }
 
         [Test]
