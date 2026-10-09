@@ -22,8 +22,9 @@ RUN yarn build
 FROM mcr.microsoft.com/dotnet/sdk:${DOTNET_VERSION} AS backend
 ARG TARGETARCH
 WORKDIR /src
-COPY global.json ./
+COPY global.json .editorconfig ./
 COPY src ./src
+COPY Logo ./Logo
 # TARGETARCH is amd64 or arm64 (docker buildx); map it to a .NET runtime identifier.
 # Sonarr.Mono is loaded by name at runtime on Linux (see Bootstrap.ASSEMBLIES), so it is published into the same folder.
 RUN case "${TARGETARCH:-amd64}" in \
