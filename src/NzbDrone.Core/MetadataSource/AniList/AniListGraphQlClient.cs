@@ -21,6 +21,7 @@ namespace NzbDrone.Core.MetadataSource.AniList
         List<AniListRelationEdge> GetRelations(int aniListId);
         AniListStudioResource GetStudio(string studioName);
         List<AniListMedia> GetMediaByStudio(string studioName, bool mainStudioOnly);
+        List<AniListMedia> GetMediaByStartDate(DateTime from, DateTime? to, AniListAdultFilter adultFilter);
     }
 
     public class AniListGraphQlClient : IAniListGraphQlClient
@@ -259,6 +260,64 @@ namespace NzbDrone.Core.MetadataSource.AniList
             }
 
             return result;
+        }
+
+        public List<AniListMedia> GetMediaByStartDate(DateTime from, DateTime? to, AniListAdultFilter adultFilter)
+        {
+            var adultArgument = adultFilter switch
+            {
+                AniListAdultFilter.Adult => ", isAdult: true",
+                AniListAdultFilter.NonAdult => ", isAdult: false",
+                _ => string.Empty
+            };
+
+            // startDate_lesser is only declared when an upper bound is wanted; a null variable would match nothing
+            var toArgument = to.HasValue ? ", startDate_lesser: $to" : string.Empty;
+            var toVariable = to.HasValue ? ", $to: FuzzyDateInt" : string.Empty;
+
+            var query = $@"
+                query ($from: FuzzyDateInt{toVariable}, $page: Int, $perPage: Int) {{
+                    Page(page: $page, perPage: $perPage) {{
+                        pageInfo {{ total currentPage lastPage hasNextPage }}
+                        media(type: ANIME, startDate_greater: $from{toArgument}, sort: START_DATE_DESC{adultArgument}) {{ {MediaFields} }}
+                    }}
+                }}";
+
+            var result = new List<AniListMedia>();
+            var page = 1;
+
+            while (true)
+            {
+                var variables = to.HasValue
+                    ? new { from = ToFuzzyDate(from), to = ToFuzzyDate(to.Value), page, perPage = MaxPerPage }
+                    : (object)new { from = ToFuzzyDate(from), page, perPage = MaxPerPage };
+                var response = Execute<AniListPageData>(query, variables);
+
+                EnsureNoErrors(response);
+
+                var pageData = response.Resource?.Data?.Page;
+
+                if (pageData?.Media == null || !pageData.Media.Any())
+                {
+                    break;
+                }
+
+                result.AddRange(pageData.Media);
+
+                if (pageData.PageInfo == null || !pageData.PageInfo.HasNextPage)
+                {
+                    break;
+                }
+
+                page++;
+            }
+
+            return result;
+        }
+
+        private static int ToFuzzyDate(DateTime date)
+        {
+            return (date.Year * 10000) + (date.Month * 100) + date.Day;
         }
 
         public List<AniListRelationEdge> GetRelations(int aniListId)

@@ -70,15 +70,21 @@ series created may carry the root's title rather than the one clicked.
 * Chains are cached in memory for 24 hours keyed by every member id. Resolving a 3-season chain costs about
   1 + (number of levels) AniList requests at the client's 2 s spacing.
 
-## AniList Studio import list
+## AniList import lists
 
 Settings → Import Lists → "AniList Studio" adds every anime entry of a studio (for example "Pink Pineapple" or
 "T-Rex") that passes the adult filter, and keeps adding new ones every 12 hours. Entries already in the library are
 reported under the owning series' id and skipped; a sequel of a series not yet in the library is added as its chain
 root. "Main studio only" uses AniList's `isMain` flag, which AniList sets for very few hentai entries (Pink
 Pineapple: 6 of 272), so it is off by default. The first sync of a large studio resolves one chain per unknown entry
-and takes minutes at the 2 s request spacing. Other import list types still send the AniList id where they expect a
-TVDB id and are not used.
+and takes minutes at the 2 s request spacing.
+
+"AniList New Releases" lists every anime entry (under the instance's adult filter) whose AniList start date lies
+within the last "Months back" months, plus future-dated entries when "Include upcoming" is on, whatever the studio.
+It is the "grab everything new" list; pair it with a quality profile or tag if "everything" is too much, or turn
+"Enable Automatic Add" off and pick from Series → Discover. Both lists share `AniListMediaImportBase` (the upstream
+`AniListImportBase` is the OAuth user-list base and is untouched). Other import list types still send the AniList id
+where they expect a TVDB id and are not used.
 
 ## New files (fork-only)
 
@@ -92,7 +98,9 @@ TVDB id and are not used.
 | `src/NzbDrone.Core/MetadataSource/AniList/AniListTitleCache.cs` | In-memory cache of the AniList media fetched during add/refresh (titles for scene mappings) |
 | `src/NzbDrone.Core/MetadataSource/AniList/AniListChain.cs`, `AniListChainResolver.cs` | Sequel chain model and resolver (BFS over relations, barrier and never-re-root rules, 24 h cache) |
 | `src/NzbDrone.Core/MetadataSource/AniList/AniListSeriesLookup.cs` | Finds the library series owning an AniList id (`TvdbId` or `AniListIds`) |
+| `src/NzbDrone.Core/ImportLists/AniList/AniListMediaImportBase.cs` | Shared fetch/filter/mapping of the fork's AniList import lists |
 | `src/NzbDrone.Core/ImportLists/AniList/Studio/AniListStudioImport.cs`, `AniListStudioSettings.cs` | "AniList Studio" import list |
+| `src/NzbDrone.Core/ImportLists/AniList/NewReleases/AniListNewReleasesImport.cs`, `AniListNewReleasesSettings.cs` | "AniList New Releases" import list |
 | `src/NzbDrone.Core/MetadataSource/AniList/AniListException.cs` | Error type surfaced to the UI |
 | `src/NzbDrone.Core/MetadataSource/AniList/AniListRelatedSeriesService.cs`, `AddRelatedSeriesCommand.cs` | Adds related AniList entries on add and on command |
 | `src/NzbDrone.Core/MetadataSource/AniList/Resource/AniListResource.cs` | GraphQL response classes |
@@ -162,7 +170,7 @@ separate entries with the same title (Aki-Sora TV series and OVA), so releases o
 
 ## Known broken or degraded
 
-* Import lists other than "AniList Studio", Trakt, calendar feeds, Kodi/Plex metadata exporters and notifications
+* Import lists other than the two AniList ones, Trakt, calendar feeds, Kodi/Plex metadata exporters and notifications
   still send the AniList id where they expect a TVDB id. They are not used by this instance.
 * The MyAnimeList import list still talks to `services.sonarr.tv` for OAuth. Do not enable it.
 * BroadcastheNet and HDBits indexers send `Series.TvdbId` in their searches (`BroadcastheNetRequestGenerator.cs`,
