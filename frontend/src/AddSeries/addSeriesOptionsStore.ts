@@ -22,7 +22,7 @@ const { useOptions, useOption, setOption } =
       language: null,
       monitor: 'all',
       qualityProfileId: 0,
-      seriesType: 'standard',
+      seriesType: 'anime',
       seasonFolder: true,
       searchForMissingEpisodes: false,
       searchForCutoffUnmetEpisodes: false,

@@ -136,6 +136,9 @@ namespace NzbDrone.Core.Tv
 
             series.ApplyChanges(newSeries);
 
+            // Fork: every AniList entry is handled as anime (absolute numbering, anime search), whatever the add form sent
+            series.SeriesType = SeriesTypes.Anime;
+
             return series;
         }
 

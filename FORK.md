@@ -62,6 +62,7 @@ Every edit is marked with a `// Fork:` comment or an `[Ignore("Fork: ...")]` att
 | `src/NzbDrone.Core/DataAugmentation/Xem/XemService.cs` | No longer implements `ISceneMappingProvider` or handles series events |
 | `src/NzbDrone.Core/Indexers/Newznab/NewznabRequestGenerator.cs` | `ExternalIdSearchesEnabled => false` gates the five `Supports*Search` flags; anime season searches send a plain title query when the standard season format is off |
 | `src/NzbDrone.Core/DecisionEngine/DownloadDecisionMaker.cs` | Passes no ids to `IParsingService.Map` |
+| `src/NzbDrone.Core/Tv/AddSeriesService.cs`, `src/NzbDrone.Core/Tv/RefreshSeriesService.cs` | Series type is pinned to Anime on add and on every refresh; with Standard the indexers used here receive no search at all |
 | `src/NzbDrone.Core/Parser/ParsingService.cs` | A release named after the series with no numbers maps to the single season; for a single-episode entry it becomes that episode instead of a season pack |
 | `src/NzbDrone.Core/MediaFiles/EpisodeImport/Aggregation/AggregationService.cs` | Unparsed media files are rejected after the aggregators ran, so the single-episode fallback can map them |
 | `src/NzbDrone.Common/Instrumentation/NzbDroneLogger.cs` | Sentry target only registered when `ForkSettings.CrashReportingEnabled` |
@@ -75,6 +76,7 @@ Every edit is marked with a `// Fork:` comment or an `[Ignore("Fork: ...")]` att
 | `frontend/src/AddSeries/AddNewSeries/AddNewSeriesSearchResult.tsx` | Same |
 | `frontend/src/AddSeries/ImportSeries/Import/SelectSeries/ImportSeriesSearchResult.tsx` | Same |
 | `frontend/src/AddSeries/AddNewSeries/AddNewSeries.tsx` | Search box hint mentions `anilist:` and `mal:` |
+| `frontend/src/AddSeries/addSeriesOptionsStore.ts` | Add form defaults to series type Anime |
 
 ## Tested against real indexers (2026-10-09)
 

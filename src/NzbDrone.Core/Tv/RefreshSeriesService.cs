@@ -119,6 +119,9 @@ namespace NzbDrone.Core.Tv
             series.CleanOriginalTitle = seriesInfo.CleanOriginalTitle;
             series.SeasonTypes = seriesInfo.SeasonTypes;
 
+            // Fork: keep the series type pinned to anime even if it was changed in the editor
+            series.SeriesType = SeriesTypes.Anime;
+
             try
             {
                 series.Path = new DirectoryInfo(series.Path).FullName;
