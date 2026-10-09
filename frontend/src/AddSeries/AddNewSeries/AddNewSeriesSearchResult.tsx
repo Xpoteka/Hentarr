@@ -150,7 +150,7 @@ function AddNewSeriesSearchResult({ series }: AddNewSeriesSearchResultProps) {
 
               <Link
                 className={styles.tvdbLink}
-                to={`https://www.thetvdb.com/?tab=series&id=${tvdbId}`}
+                to={`https://anilist.co/anime/${tvdbId}`}
                 aria-label={translate('ViewSeriesOnTvdb', { title })}
                 onPress={handleTvdbLinkPress}
               >

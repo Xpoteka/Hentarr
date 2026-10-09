@@ -89,7 +89,7 @@ function AddNewSeries() {
               className={styles.searchInput}
               name="seriesLookup"
               value={term}
-              placeholder="eg. Breaking Bad, tvdb:####"
+              placeholder="eg. euphoria, anilist:####, mal:####"
               autoFocus={true}
               onChange={handleSearchInputChange}
             />

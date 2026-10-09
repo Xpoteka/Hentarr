@@ -26,8 +26,8 @@ function SeriesDetailsLinks(props: SeriesDetailsLinksProps) {
     if (tvdbId) {
       validLinks.push({
         externalId: tvdbId,
-        name: 'The TVDB',
-        url: `https://www.thetvdb.com/?tab=series&id=${tvdbId}`,
+        name: 'AniList',
+        url: `https://anilist.co/anime/${tvdbId}`,
       });
     }
 

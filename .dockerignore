@@ -1,0 +1,12 @@
+.git
+.github
+_output*
+_tests*
+_temp*
+node_modules
+docker
+distribution
+**/bin
+**/obj
+*.md
+!FORK.md

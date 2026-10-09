@@ -1,0 +1,128 @@
+# Hentarr fork notes
+
+Hentarr is a private fork of [Sonarr](https://github.com/Sonarr/Sonarr) (`v5-develop`, forked at `096f4e29f`)
+that uses the **AniList GraphQL API** instead of Sonarr's SkyHook/TVDB service for all series metadata, restricted
+by default to adult anime. Release parsing, quality profiles, indexers, download clients, import and renaming are
+unchanged from upstream.
+
+Nothing in this fork goes upstream. Do not open issues or pull requests against Sonarr/Sonarr from this repository.
+
+## How it works
+
+* The AniList media id is stored in `Series.TvdbId`. There is no new column, API field or migration. `AniListIds`
+  and `MalIds` are also filled so a later move to a proper field is easy.
+* One AniList entry is one series with exactly one season. Sequels are separate entries on AniList and therefore
+  separate series here. Series type is always `Anime`, episodes are numbered 1..n with absolute numbers.
+* English titles and synonyms from AniList are delivered as scene mappings, which is the path Sonarr already uses
+  for indexer search terms and for matching release titles back to a series.
+* Everything keyed by TVDB id is switched off: Sonarr's scene mapping service, TheXEM, `tvdbid`/`imdbid`/`rid`/
+  `tvmazeid`/`tmdbid` indexer searches, and release-to-series matching by id.
+* Crash reporting (Sentry), analytics, update checks and the health checks that call `services.sonarr.tv` are
+  disabled through one switch, `NzbDrone.Common.Fork.ForkSettings`.
+
+## Settings
+
+| Setting | Where | Values | Default |
+|---|---|---|---|
+| Adult filter for search | env `HENTARR_ADULT_FILTER` or `<AniListAdultFilter>` in `config.xml` | `adult`, `nonadult`, `all` | `adult` |
+| Port | env `SONARR__SERVER__PORT` or `<Port>` in `config.xml` | | `8989` (Docker image: `8990`) |
+| Instance name | env `SONARR__APP__INSTANCENAME` or `<InstanceName>` | must start or end with `Sonarr` (upstream rule) | `Sonarr` (Docker image: `Sonarr - Hentarr`) |
+
+Search terms: a plain title, `anilist:<id>`, `mal:<id>`. `tvdb:<id>` is treated as an AniList id. `imdb:` and
+`tmdb:` return nothing.
+
+## New files (fork-only)
+
+| Path | Purpose |
+|---|---|
+| `src/NzbDrone.Common/Fork/ForkSettings.cs` | Single switch for everything that contacted Sonarr's services |
+| `src/NzbDrone.Core/MetadataSource/AniList/AniListGraphQlClient.cs` | GraphQL client: search, by id, by MAL id, `id_in` batches, 429 back-off |
+| `src/NzbDrone.Core/MetadataSource/AniList/AniListMapper.cs` | AniList media to `Series` / `Episode` mapping, slug, HTML stripping, alternate titles |
+| `src/NzbDrone.Core/MetadataSource/AniList/AniListMetadataProxy.cs` | The only `IProvideSeriesInfo` / `ISearchForNewSeries` implementation |
+| `src/NzbDrone.Core/MetadataSource/AniList/AniListMetadataOptions.cs` | Adult filter setting |
+| `src/NzbDrone.Core/MetadataSource/AniList/AniListTitleCache.cs` | In-memory cache of alternate titles fetched during add/refresh |
+| `src/NzbDrone.Core/MetadataSource/AniList/AniListException.cs` | Error type surfaced to the UI |
+| `src/NzbDrone.Core/MetadataSource/AniList/Resource/AniListResource.cs` | GraphQL response classes |
+| `src/NzbDrone.Core/DataAugmentation/AniList/AniListSceneMappingProvider.cs` | Emits alternate titles as scene mappings |
+| `src/NzbDrone.Core/DataAugmentation/AniList/AniListSceneMappingTrigger.cs` | Queues a scene mapping update on every series add/import |
+| `src/NzbDrone.Core/DataAugmentation/AniList/AniListSceneMappingCleanup.cs` | Purges leftover TVDB-keyed mappings at startup |
+| `src/NzbDrone.Core.Test/MetadataSource/AniList/*`, `src/NzbDrone.Core.Test/DataAugmentation/AniList/*`, `src/NzbDrone.Core.Test/IndexerTests/NewznabTests/NewznabRequestGeneratorForkFixture.cs`, `src/NzbDrone.Core.Test/Files/AniList/*.json` | Unit tests and recorded AniList fixtures |
+| `Dockerfile`, `.dockerignore` | Container build |
+| `FORK.md` | This file |
+
+## Upstream files modified
+
+Every edit is marked with a `// Fork:` comment or an `[Ignore("Fork: ...")]` attribute.
+
+| File | Change |
+|---|---|
+| `src/NzbDrone.Core/MetadataSource/SkyHook/SkyHookProxy.cs` | No longer implements `IProvideSeriesInfo`, `ISearchForNewSeries` (class kept, unused) |
+| `src/NzbDrone.Core/DataAugmentation/Scene/ServicesProvider.cs` | No longer implements `ISceneMappingProvider` |
+| `src/NzbDrone.Core/DataAugmentation/Xem/XemService.cs` | No longer implements `ISceneMappingProvider` or handles series events |
+| `src/NzbDrone.Core/Indexers/Newznab/NewznabRequestGenerator.cs` | `ExternalIdSearchesEnabled => false` gates the five `Supports*Search` flags |
+| `src/NzbDrone.Core/DecisionEngine/DownloadDecisionMaker.cs` | Passes no ids to `IParsingService.Map` |
+| `src/NzbDrone.Common/Instrumentation/NzbDroneLogger.cs` | Sentry target only registered when `ForkSettings.CrashReportingEnabled` |
+| `src/NzbDrone.Core/Update/UpdatePackageProvider.cs` | Returns no updates when `ForkSettings.UpdaterEnabled` is false |
+| `src/NzbDrone.Core/Configuration/ConfigFileProvider.cs` | `AnalyticsEnabled` and `UpdateAutomatically` forced false |
+| `src/NzbDrone.Core/HealthCheck/ServerSideNotificationService.cs`, `Checks/SystemTimeCheck.cs`, `Checks/ProxyCheck.cs` | Return a healthy result without calling `services.sonarr.tv` |
+| `src/NzbDrone.Core.Test/IndexerTests/NewznabTests/NewznabRequestGeneratorFixture.cs` | Whole fixture ignored (assumes id searches); replaced by the fork fixture |
+| `src/NzbDrone.Core.Test/UpdateTests/UpdatePackageProviderFixture.cs` | Ignored (calls `services.sonarr.tv`) |
+| `src/NzbDrone.Core.Test/HealthCheck/Checks/SystemTimeCheckFixture.cs` | One test ignored |
+| `frontend/src/Series/Details/SeriesDetailsLinks.tsx` | External link goes to `anilist.co/anime/<id>` |
+| `frontend/src/AddSeries/AddNewSeries/AddNewSeriesSearchResult.tsx` | Same |
+| `frontend/src/AddSeries/ImportSeries/Import/SelectSeries/ImportSeriesSearchResult.tsx` | Same |
+| `frontend/src/AddSeries/AddNewSeries/AddNewSeries.tsx` | Search box hint mentions `anilist:` and `mal:` |
+
+## Known broken or degraded
+
+* Import lists, Trakt, calendar feeds, Kodi/Plex metadata exporters and notifications still send the AniList id
+  where they expect a TVDB id. They are not used by this instance.
+* The MyAnimeList import list still talks to `services.sonarr.tv` for OAuth. Do not enable it.
+* BroadcastheNet and HDBits indexers send `Series.TvdbId` in their searches (`BroadcastheNetRequestGenerator.cs`,
+  `HDBitsRequestGenerator.cs`). They are private trackers for Western TV and must not be configured here.
+* The proxy health check (which pinged `services.sonarr.tv` through the proxy) is disabled.
+* System > Updates shows no entries. Update the fork by rebuilding.
+* Labels and log lines still say "TVDB" next to AniList ids. Episode titles are "Episode n". No fanart, season
+  posters or actors.
+* Scene mappings from AniList refresh on every series add, every 3 hours (scheduled task) and after a restart;
+  synonyms edited on AniList therefore appear within 3 hours of the next refresh of that series.
+
+## Rebasing on upstream
+
+1. `git fetch upstream` and `git rebase upstream/v5-develop`.
+2. Conflicts can only occur in the files listed under "Upstream files modified". Re-apply the `// Fork:` lines.
+3. If upstream adds a new `IProvideSeriesInfo` / `ISearchForNewSeries` / `ISceneMappingProvider` implementation,
+   detach it the same way as `SkyHookProxy` / `ServicesProvider`, otherwise DryIoc resolves two implementations.
+4. If upstream adds a new call to `ISonarrCloudRequestBuilder`, gate it with `ForkSettings`. Grep for
+   `SonarrCloudRequestBuilder` and `sonarr.tv`.
+5. Build (`dotnet build src/Sonarr.sln -p:Platform=Posix`), run `Sonarr.Core.Test` unit tests and compare with the
+   previous run, then start the app with trace logging and confirm the only outbound hosts are `graphql.anilist.co`
+   and `s4.anilist.co`:
+
+   ```sh
+   SONARR__LOG__LEVEL=trace SONARR__LOG__CONSOLELEVEL=trace ./Sonarr -nobrowser -data=/tmp/hentarr-data | \
+     grep -o 'Req: \[[A-Z]*\] https\?://[A-Za-z0-9._-]*' | sort | uniq -c
+   ```
+
+## Building
+
+```sh
+yarn install && yarn build                                   # frontend -> _output/UI
+dotnet build src/Sonarr.sln -c Debug -p:Platform=Posix       # backend  -> _output/net10.0
+cp -R _output/UI _output/net10.0/UI
+_output/net10.0/Sonarr -nobrowser -data=/path/to/config
+```
+
+Docker (TrueNAS SCALE or any host with buildx):
+
+```sh
+docker build -t hentarr .
+docker run -d --name hentarr -p 8990:8990 \
+  -e HENTARR_ADULT_FILTER=adult \
+  -v /mnt/pool/apps/hentarr:/config \
+  -v /mnt/pool/media/hentai:/media \
+  hentarr
+```
+
+The image runs as root by default; pass `--user 1000:1000` (or the TrueNAS app user) and make `/config` and
+`/media` writable by that user if you prefer.

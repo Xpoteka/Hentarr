@@ -65,7 +65,7 @@ function ImportSeriesSearchResult({
       <div className={styles.tvdbLinkCell} role="gridcell">
         <Link
           className={styles.tvdbLink}
-          to={`https://www.thetvdb.com/?tab=series&id=${tvdbId}`}
+          to={`https://anilist.co/anime/${tvdbId}`}
         >
           <Icon
             className={styles.tvdbLinkIcon}
