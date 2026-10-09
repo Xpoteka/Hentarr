@@ -363,6 +363,28 @@ namespace NzbDrone.Core.Test.IndexerSearchTests
         }
 
         [Test]
+        public async Task season_search_for_anime_season_zero_should_use_special_episode_search()
+        {
+            // Fork: specials of an AniList chain have no absolute numbers, so season 0 goes through the title search
+            _xemSeries.SeriesType = SeriesTypes.Anime;
+            WithEpisode(0, 1, null, null);
+            WithEpisode(0, 2, null, null);
+            _xemEpisodes.ForEach(e =>
+            {
+                e.EpisodeFileId = 0;
+                e.Title = "Bonus Video";
+                e.AbsoluteEpisodeNumber = null;
+            });
+
+            var allCriteria = WatchForSearchCriteria();
+
+            await Subject.SeasonSearch(_xemSeries.Id, 0, false, false, true, false);
+
+            allCriteria.OfType<SpecialEpisodeSearchCriteria>().Should().NotBeEmpty();
+            allCriteria.OfType<AnimeSeasonSearchCriteria>().Should().BeEmpty();
+        }
+
+        [Test]
         public async Task season_search_for_anime_should_not_search_episodes_when_final_episode_airs_within_24_hours()
         {
             WithEpisodes();

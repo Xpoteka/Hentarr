@@ -19,6 +19,8 @@ namespace NzbDrone.Core.MetadataSource.AniList
         List<AniListMedia> Search(string term, AniListAdultFilter adultFilter);
         List<AniListMedia> GetMediaByIds(IEnumerable<int> aniListIds);
         List<AniListRelationEdge> GetRelations(int aniListId);
+        AniListStudioResource GetStudio(string studioName);
+        List<AniListMedia> GetMediaByStudio(string studioName, bool mainStudioOnly);
     }
 
     public class AniListGraphQlClient : IAniListGraphQlClient
@@ -34,6 +36,7 @@ namespace NzbDrone.Core.MetadataSource.AniList
         private const string MediaFields = @"
             id
             idMal
+            type
             isAdult
             title { romaji english native }
             synonyms
@@ -49,7 +52,25 @@ namespace NzbDrone.Core.MetadataSource.AniList
             genres
             averageScore
             studios(isMain: true) { nodes { name } }
-            airingSchedule(perPage: 50) { nodes { episode airingAt } }";
+            airingSchedule(perPage: 50) { nodes { episode airingAt } }
+            relations {
+                edges {
+                    relationType
+                    node { id idMal type isAdult format status title { romaji english native } startDate { year month day } }
+                }
+            }";
+
+        private const string StudioQuery = $@"
+            query ($search: String, $isMain: Boolean, $page: Int, $perPage: Int) {{
+                Studio(search: $search) {{
+                    id
+                    name
+                    media(isMain: $isMain, sort: START_DATE, page: $page, perPage: $perPage) {{
+                        pageInfo {{ total currentPage lastPage hasNextPage }}
+                        nodes {{ {MediaFields} }}
+                    }}
+                }}
+            }}";
 
         private const string MediaByIdQuery = $@"
             query ($id: Int) {{
@@ -181,6 +202,60 @@ namespace NzbDrone.Core.MetadataSource.AniList
 
                     page++;
                 }
+            }
+
+            return result;
+        }
+
+        public AniListStudioResource GetStudio(string studioName)
+        {
+            var response = Execute<AniListStudioData>(StudioQuery, new { search = studioName, page = 1, perPage = 1 });
+
+            if (IsNotFound(response))
+            {
+                return null;
+            }
+
+            EnsureNoErrors(response);
+
+            return response.Resource?.Data?.Studio;
+        }
+
+        public List<AniListMedia> GetMediaByStudio(string studioName, bool mainStudioOnly)
+        {
+            var result = new List<AniListMedia>();
+            var page = 1;
+
+            while (true)
+            {
+                // AniList treats an explicit null isMain as "no entries"; the variable must be left out to get every entry
+                var variables = mainStudioOnly
+                    ? new { search = studioName, isMain = true, page, perPage = MaxPerPage }
+                    : (object)new { search = studioName, page, perPage = MaxPerPage };
+                var response = Execute<AniListStudioData>(StudioQuery, variables);
+
+                if (IsNotFound(response))
+                {
+                    break;
+                }
+
+                EnsureNoErrors(response);
+
+                var media = response.Resource?.Data?.Studio?.Media;
+
+                if (media?.Nodes == null)
+                {
+                    break;
+                }
+
+                result.AddRange(media.Nodes.Where(m => string.Equals(m.Type, "ANIME", StringComparison.OrdinalIgnoreCase)));
+
+                if (media.PageInfo == null || !media.PageInfo.HasNextPage)
+                {
+                    break;
+                }
+
+                page++;
             }
 
             return result;

@@ -11,8 +11,10 @@ Nothing in this fork goes upstream. Do not open issues or pull requests against 
 
 * The AniList media id is stored in `Series.TvdbId`. There is no new column, API field or migration. `AniListIds`
   and `MalIds` are also filled so a later move to a proper field is easy.
-* One AniList entry is one series with exactly one season. Sequels are separate entries on AniList and therefore
-  separate series here. Series type is always `Anime`, episodes are numbered 1..n with absolute numbers.
+* One AniList **sequel chain** is one series. The first entry is the series (its id is `TvdbId`), each sequel is
+  the next season, and related entries of AniList format `SPECIAL` are season 0 "Specials". Spin-offs, side stories,
+  alternatives and parents are separate series. Details under "Sequel chains" below. Series type is always `Anime`;
+  episodes carry continuous absolute numbers across seasons and per-entry scene numbers.
 * English titles and synonyms from AniList are delivered as scene mappings, which is the path Sonarr already uses
   for indexer search terms and for matching release titles back to a series.
 * Everything keyed by TVDB id is switched off: Sonarr's scene mapping service, TheXEM, `tvdbid`/`imdbid`/`rid`/
@@ -29,8 +31,10 @@ Nothing in this fork goes upstream. Do not open issues or pull requests against 
 | Port | env `SONARR__SERVER__PORT` or `<Port>` in `config.xml` | | `8989` (Docker image: `8990`) |
 | Instance name | env `SONARR__APP__INSTANCENAME` or `<InstanceName>` | must start or end with `Sonarr` (upstream rule) | `Sonarr` (Docker image: `Sonarr - Hentarr`) |
 
-When a series is added, every related AniList entry (sequel, prequel, side story, spin-off, parent, alternative,
-summary) that passes the adult filter is added as well, with the same root folder, profile, monitoring and tags. Each
+When a series is added, every related AniList entry (side story, spin-off, parent, alternative, summary, and sequels
+or prequels that are not part of the series' own chain) that passes the adult filter is added as well, with the same
+root folder, profile, monitoring and tags. Each related entry is resolved to the root of its own chain first, so
+"Makai Kishi Ingrid: Re" brings in "Makai Kishi Ingrid" with two seasons. Specials are never added as series. Each
 added entry repeats the step, so a whole franchise such as Taimanin comes in with one add. AniList relations are not symmetric, so a second pass searches the franchise word of the title (for example
 "Taimanin") and adds entries whose own relations point back at the library. Entries already in the
 library or on the import list exclusions are skipped, so deleting one with "add exclusion" keeps it out. The
@@ -38,7 +42,43 @@ library or on the import list exclusions are skipped, so deleting one with "add 
 `seriesId`) runs the same expansion for titles that are already in the library.
 
 Search terms: a plain title, `anilist:<id>`, `mal:<id>`. `tvdb:<id>` is treated as an AniList id. `imdb:` and
-`tmdb:` return nothing.
+`tmdb:` return nothing. An id search for a sequel or special shows the chain root (or the library series that already
+owns the chain); a plain-title search shows single entries and the add resolves the chosen one to its root, so the
+series created may carry the root's title rather than the one clicked.
+
+## Sequel chains
+
+* Resolution walks `SEQUEL`/`PREQUEL` (and `SIDE_STORY`/`SPIN_OFF`/`PARENT` edges whose title starts with the base
+  title of the entry it started from, for example "Taimanin Asagi: Toraware no Niku Ningyou" under "Taimanin Asagi")
+  in both directions. AniList relations are not symmetric, so both ends are followed. Only `ANIME` entries count;
+  the adult filter is not applied inside a chain.
+* Entries whose title does not share the base title stay out even when AniList calls them a sequel: "Makai Kishi
+  Ingrid" is listed as a sequel of "Taimanin Asagi" and becomes its own series.
+* `format == SPECIAL` entries reached from any member are season 0. Their episodes have no absolute or scene
+  numbers; season 0 is unmonitored when the series is added, and a season 0 search runs the title-based special
+  search ("<series> <special title>", with the series prefix stripped from the special's title).
+* Seasons are ordered by start date, then id. Season titles are the entry titles and show in the UI.
+* Episode `S02E01` of a chain has `AbsoluteEpisodeNumber` continuing from season 1 and scene numbers `2/1/1`, so
+  "Taimanin Asagi 2 - 01" matches it and a season 2 search queries "Taimanin Asagi 2" plus its alternate titles.
+  The per-season scene mappings have `SceneSeasonNumber` set and `SeasonNumber` null (`anilist:<root>:s<n>:<title>`).
+* **An existing series is never re-rooted.** A refresh walks forward from the stored id only; ids owned by another
+  library series are a barrier; a prequel of the stored id is logged once and ignored. `TvdbId` therefore never
+  changes after the add.
+* Merging a franchise that was added as separate series under v1.0: delete the sequel series (keep files), refresh
+  the first entry (its chain now reaches the sequels), then manual-import the files into the new seasons. Deleting
+  the first entry instead and re-adding the sequel gives the same result.
+* Chains are cached in memory for 24 hours keyed by every member id. Resolving a 3-season chain costs about
+  1 + (number of levels) AniList requests at the client's 2 s spacing.
+
+## AniList Studio import list
+
+Settings → Import Lists → "AniList Studio" adds every anime entry of a studio (for example "Pink Pineapple" or
+"T-Rex") that passes the adult filter, and keeps adding new ones every 12 hours. Entries already in the library are
+reported under the owning series' id and skipped; a sequel of a series not yet in the library is added as its chain
+root. "Main studio only" uses AniList's `isMain` flag, which AniList sets for very few hentai entries (Pink
+Pineapple: 6 of 272), so it is off by default. The first sync of a large studio resolves one chain per unknown entry
+and takes minutes at the 2 s request spacing. Other import list types still send the AniList id where they expect a
+TVDB id and are not used.
 
 ## New files (fork-only)
 
@@ -49,7 +89,10 @@ Search terms: a plain title, `anilist:<id>`, `mal:<id>`. `tvdb:<id>` is treated 
 | `src/NzbDrone.Core/MetadataSource/AniList/AniListMapper.cs` | AniList media to `Series` / `Episode` mapping, slug, HTML stripping, alternate titles |
 | `src/NzbDrone.Core/MetadataSource/AniList/AniListMetadataProxy.cs` | The only `IProvideSeriesInfo` / `ISearchForNewSeries` implementation |
 | `src/NzbDrone.Core/MetadataSource/AniList/AniListMetadataOptions.cs` | Adult filter setting |
-| `src/NzbDrone.Core/MetadataSource/AniList/AniListTitleCache.cs` | In-memory cache of alternate titles fetched during add/refresh |
+| `src/NzbDrone.Core/MetadataSource/AniList/AniListTitleCache.cs` | In-memory cache of the AniList media fetched during add/refresh (titles for scene mappings) |
+| `src/NzbDrone.Core/MetadataSource/AniList/AniListChain.cs`, `AniListChainResolver.cs` | Sequel chain model and resolver (BFS over relations, barrier and never-re-root rules, 24 h cache) |
+| `src/NzbDrone.Core/MetadataSource/AniList/AniListSeriesLookup.cs` | Finds the library series owning an AniList id (`TvdbId` or `AniListIds`) |
+| `src/NzbDrone.Core/ImportLists/AniList/Studio/AniListStudioImport.cs`, `AniListStudioSettings.cs` | "AniList Studio" import list |
 | `src/NzbDrone.Core/MetadataSource/AniList/AniListException.cs` | Error type surfaced to the UI |
 | `src/NzbDrone.Core/MetadataSource/AniList/AniListRelatedSeriesService.cs`, `AddRelatedSeriesCommand.cs` | Adds related AniList entries on add and on command |
 | `src/NzbDrone.Core/MetadataSource/AniList/Resource/AniListResource.cs` | GraphQL response classes |
@@ -57,7 +100,7 @@ Search terms: a plain title, `anilist:<id>`, `mal:<id>`. `tvdb:<id>` is treated 
 | `src/NzbDrone.Core/DataAugmentation/AniList/AniListSceneMappingTrigger.cs` | Queues a scene mapping update on every series add/import |
 | `src/NzbDrone.Core/DataAugmentation/AniList/AniListSceneMappingCleanup.cs` | Purges leftover TVDB-keyed mappings at startup |
 | `src/NzbDrone.Core/MediaFiles/EpisodeImport/Aggregation/Aggregators/AggregateSingleEpisodeFallback.cs` | Maps a numberless video file to the only episode of a single-episode entry on import |
-| `src/NzbDrone.Core.Test/MetadataSource/AniList/*`, `src/NzbDrone.Core.Test/DataAugmentation/AniList/*`, `src/NzbDrone.Core.Test/IndexerTests/NewznabTests/NewznabRequestGeneratorForkFixture.cs`, `src/NzbDrone.Core.Test/Files/AniList/*.json` | Unit tests and recorded AniList fixtures |
+| `src/NzbDrone.Core.Test/MetadataSource/AniList/*`, `src/NzbDrone.Core.Test/DataAugmentation/AniList/*`, `src/NzbDrone.Core.Test/ImportListTests/AniList/*`, `src/NzbDrone.Core.Test/IndexerTests/NewznabTests/NewznabRequestGeneratorForkFixture.cs`, `src/NzbDrone.Core.Test/ParserTests/ParsingServiceTests/Fork*.cs`, `src/NzbDrone.Core.Test/TvTests/ForkAddSeriesChainFixture.cs`, `src/NzbDrone.Core.Test/Files/AniList/*.json` | Unit tests and recorded AniList fixtures |
 | `Dockerfile`, `.dockerignore` | Container build |
 | `FORK.md` | This file |
 
@@ -72,8 +115,10 @@ Every edit is marked with a `// Fork:` comment or an `[Ignore("Fork: ...")]` att
 | `src/NzbDrone.Core/DataAugmentation/Xem/XemService.cs` | No longer implements `ISceneMappingProvider` or handles series events |
 | `src/NzbDrone.Core/Indexers/Newznab/NewznabRequestGenerator.cs` | `ExternalIdSearchesEnabled => false` gates the five `Supports*Search` flags; anime season searches send a plain title query when the standard season format is off |
 | `src/NzbDrone.Core/DecisionEngine/DownloadDecisionMaker.cs` | Passes no ids to `IParsingService.Map` |
-| `src/NzbDrone.Core/Tv/AddSeriesService.cs`, `src/NzbDrone.Core/Tv/RefreshSeriesService.cs` | Series type is pinned to Anime on add and on every refresh; with Standard the indexers used here receive no search at all |
-| `src/NzbDrone.Core/Parser/ParsingService.cs` | A release named after the series with no numbers maps to the single season; for a single-episode entry it becomes that episode instead of a season pack |
+| `src/NzbDrone.Core/Tv/AddSeriesService.cs`, `src/NzbDrone.Core/Tv/RefreshSeriesService.cs` | Series type is pinned to Anime on add and on every refresh; with Standard the indexers used here receive no search at all. On add, the id returned by the metadata source (the chain root) is kept instead of the requested member id |
+| `src/NzbDrone.Core/Tv/RefreshEpisodeService.cs` | Copies `SceneSeasonNumber`, `SceneEpisodeNumber` and `SceneAbsoluteEpisodeNumber` from the metadata source (upstream only gets them from TheXEM) |
+| `src/NzbDrone.Core/Parser/ParsingService.cs` | A release named after the series (or a season title) with no numbers maps to that season; when the season has one episode it becomes that episode instead of a season pack |
+| `src/NzbDrone.Core/IndexerSearch/ReleaseSearchService.cs` | A season 0 search of an anime series runs the special (title) search instead of the anime season search |
 | `src/NzbDrone.Core/MediaFiles/EpisodeImport/Aggregation/AggregationService.cs` | Unparsed media files are rejected after the aggregators ran, so the single-episode fallback can map them |
 | `src/NzbDrone.Common/Instrumentation/NzbDroneLogger.cs` | Sentry target only registered when `ForkSettings.CrashReportingEnabled` |
 | `src/NzbDrone.Core/Update/UpdatePackageProvider.cs` | Returns no updates when `ForkSettings.UpdaterEnabled` is false |
@@ -117,15 +162,19 @@ separate entries with the same title (Aki-Sora TV series and OVA), so releases o
 
 ## Known broken or degraded
 
-* Import lists, Trakt, calendar feeds, Kodi/Plex metadata exporters and notifications still send the AniList id
-  where they expect a TVDB id. They are not used by this instance.
+* Import lists other than "AniList Studio", Trakt, calendar feeds, Kodi/Plex metadata exporters and notifications
+  still send the AniList id where they expect a TVDB id. They are not used by this instance.
 * The MyAnimeList import list still talks to `services.sonarr.tv` for OAuth. Do not enable it.
 * BroadcastheNet and HDBits indexers send `Series.TvdbId` in their searches (`BroadcastheNetRequestGenerator.cs`,
   `HDBitsRequestGenerator.cs`). They are private trackers for Western TV and must not be configured here.
 * The proxy health check (which pinged `services.sonarr.tv` through the proxy) is disabled.
 * System > Updates shows no entries. Update the fork by rebuilding.
-* Labels and log lines still say "TVDB" next to AniList ids. Episode titles are "Episode n". No fanart, season
-  posters or actors.
+* Labels and log lines still say "TVDB" next to AniList ids. Regular episode titles are "Episode n" (specials carry
+  the special's title). No fanart, season posters or actors.
+* Adding a member of a chain that already exists through `POST /api/v3/series` fails with a slug-in-use error rather
+  than "already added"; the UI shows the existing series instead and never sends that request.
+* If AniList later inserts an entry between two seasons, the later seasons shift on the next refresh and their files
+  need a manual import; the stored `TvdbId` never changes.
 * Scene mappings from AniList refresh on every series add, every 3 hours (scheduled task) and after a restart;
   synonyms edited on AniList therefore appear within 3 hours of the next refresh of that series.
 

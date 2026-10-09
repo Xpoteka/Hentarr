@@ -16,6 +16,8 @@ namespace NzbDrone.Core.Test.MetadataSource.AniList
     public class AniListMetadataProxyFixture : CoreTest<AniListMetadataProxy>
     {
         private AniListMedia _media;
+        private AniListChain _chain;
+        private Series _nullSeries;
 
         [SetUp]
         public void Setup()
@@ -30,16 +32,23 @@ namespace NzbDrone.Core.Test.MetadataSource.AniList
                 StartDate = new AniListFuzzyDate { Year = 2009, Month = 12, Day = 18 }
             };
 
+            _chain = AniListChain.Single(_media);
+            _nullSeries = null;
+
             Mocker.GetMock<IAniListMetadataOptions>()
                   .SetupGet(o => o.AdultFilter)
                   .Returns(AniListAdultFilter.Adult);
 
-            Mocker.GetMock<IAniListGraphQlClient>()
-                  .Setup(c => c.GetMedia(6987))
-                  .Returns(_media);
+            Mocker.GetMock<IAniListSeriesLookup>()
+                  .Setup(l => l.FindByAniListId(It.IsAny<int>()))
+                  .Returns((Series)null);
 
-            Mocker.GetMock<IAniListGraphQlClient>()
-                  .Setup(c => c.GetMedia(It.Is<int>(i => i != 6987)))
+            Mocker.GetMock<IAniListChainResolver>()
+                  .Setup(r => r.ResolveForNewId(6987, out _nullSeries))
+                  .Returns(_chain);
+
+            Mocker.GetMock<IAniListChainResolver>()
+                  .Setup(r => r.ResolveForNewId(It.Is<int>(i => i != 6987), out _nullSeries))
                   .Throws(new SeriesNotFoundException(1));
 
             Mocker.GetMock<IAniListGraphQlClient>()
@@ -49,10 +58,6 @@ namespace NzbDrone.Core.Test.MetadataSource.AniList
             Mocker.GetMock<IAniListGraphQlClient>()
                   .Setup(c => c.Search(It.IsAny<string>(), It.IsAny<AniListAdultFilter>()))
                   .Returns(new List<AniListMedia> { _media });
-
-            Mocker.GetMock<ISeriesService>()
-                  .Setup(s => s.FindByTvdbId(It.IsAny<int>()))
-                  .Returns((Series)null);
         }
 
         [Test]
@@ -63,6 +68,35 @@ namespace NzbDrone.Core.Test.MetadataSource.AniList
             result.Item1.TvdbId.Should().Be(6987);
             result.Item1.Title.Should().Be("Aki-Sora");
             result.Item2.Should().HaveCount(1);
+        }
+
+        [Test]
+        public void should_refresh_an_existing_series_through_its_own_chain()
+        {
+            var existing = new Series { Id = 3, TvdbId = 6987, AniListIds = new HashSet<int> { 6987 } };
+
+            Mocker.GetMock<IAniListSeriesLookup>().Setup(l => l.FindByAniListId(6987)).Returns(existing);
+            Mocker.GetMock<IAniListChainResolver>().Setup(r => r.ResolveForSeries(existing, true)).Returns(_chain);
+
+            var result = Subject.GetSeriesInfo(6987, Language.English, SeasonType.Official);
+
+            result.Item1.TvdbId.Should().Be(6987);
+            Mocker.GetMock<IAniListChainResolver>().Verify(r => r.ResolveForSeries(existing, true), Times.Once());
+            Mocker.GetMock<IAniListChainResolver>().Verify(r => r.ResolveForNewId(It.IsAny<int>(), out _nullSeries), Times.Never());
+        }
+
+        [Test]
+        public void should_return_owning_series_chain_when_a_new_id_belongs_to_an_existing_chain()
+        {
+            var owner = new Series { Id = 9, TvdbId = 3479, AniListIds = new HashSet<int> { 3479, 21401 } };
+            var ownerChain = AniListChain.Single(new AniListMedia { Id = 3479, Title = new AniListTitle { Romaji = "Taimanin Asagi" }, Episodes = 4 });
+
+            Mocker.GetMock<IAniListChainResolver>().Setup(r => r.ResolveForNewId(97854, out owner)).Returns((AniListChain)null);
+            Mocker.GetMock<IAniListChainResolver>().Setup(r => r.ResolveForSeries(owner, false)).Returns(ownerChain);
+
+            var result = Subject.GetSeriesInfo(97854, Language.English, SeasonType.Official);
+
+            result.Item1.TvdbId.Should().Be(3479);
         }
 
         [Test]
@@ -124,14 +158,23 @@ namespace NzbDrone.Core.Test.MetadataSource.AniList
         [Test]
         public void should_return_existing_series_when_already_in_library()
         {
-            var existing = new Series { Id = 42, TvdbId = 6987, Title = "Already here" };
+            var existing = new Series { Id = 42, TvdbId = 6987, Title = "Already here", AniListIds = new HashSet<int> { 6987 } };
 
-            Mocker.GetMock<ISeriesService>()
-                  .Setup(s => s.FindByTvdbId(6987))
-                  .Returns(existing);
+            Mocker.GetMock<IAniListSeriesLookup>().Setup(l => l.FindByAniListId(6987)).Returns(existing);
+            Mocker.GetMock<IAniListChainResolver>().Setup(r => r.ResolveForNewId(6987, out existing)).Returns((AniListChain)null);
 
             Subject.SearchForNewSeries("anilist:6987", Language.English).Should().ContainSingle(s => s.Id == 42);
             Subject.SearchForNewSeries("aki sora", Language.English).Should().ContainSingle(s => s.Id == 42);
+        }
+
+        [Test]
+        public void should_return_owning_series_for_a_member_of_an_existing_chain()
+        {
+            var owner = new Series { Id = 9, TvdbId = 3479, Title = "Taimanin Asagi", AniListIds = new HashSet<int> { 3479, 21401 } };
+
+            Mocker.GetMock<IAniListChainResolver>().Setup(r => r.ResolveForNewId(21401, out owner)).Returns((AniListChain)null);
+
+            Subject.SearchForNewSeries("anilist:21401", Language.English).Should().ContainSingle(s => s.Id == 9);
         }
 
         [Test]

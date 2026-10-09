@@ -117,6 +117,12 @@ namespace NzbDrone.Core.IndexerSearch
 
             if (series.SeriesType == SeriesTypes.Anime)
             {
+                // Fork: specials of an AniList chain have no absolute numbers; indexers get nothing for an anime "season 0"
+                if (seasonNumber == 0)
+                {
+                    return await SearchSpecial(series, episodes, monitoredOnly, userInvokedSearch, interactiveSearch);
+                }
+
                 return await SearchAnimeSeason(series, episodes, monitoredOnly, userInvokedSearch, interactiveSearch);
             }
 

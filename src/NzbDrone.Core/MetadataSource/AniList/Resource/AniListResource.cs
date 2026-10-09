@@ -61,6 +61,25 @@ namespace NzbDrone.Core.MetadataSource.AniList.Resource
         public int? AverageScore { get; set; }
         public AniListStudioConnection Studios { get; set; }
         public AniListAiringScheduleConnection AiringSchedule { get; set; }
+        public AniListRelationConnection Relations { get; set; }
+    }
+
+    public class AniListStudioData
+    {
+        public AniListStudioResource Studio { get; set; }
+    }
+
+    public class AniListStudioResource
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public AniListMediaConnection Media { get; set; }
+    }
+
+    public class AniListMediaConnection
+    {
+        public AniListPageInfo PageInfo { get; set; }
+        public List<AniListMedia> Nodes { get; set; } = new List<AniListMedia>();
     }
 
     public class AniListRelationsData

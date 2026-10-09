@@ -26,28 +26,48 @@ namespace NzbDrone.Core.MetadataSource.AniList
         private readonly ISeriesService _seriesService;
         private readonly IAniListMetadataOptions _options;
         private readonly IAniListTitleCache _titleCache;
+        private readonly IAniListChainResolver _chainResolver;
+        private readonly IAniListSeriesLookup _lookup;
         private readonly Logger _logger;
 
         public AniListMetadataProxy(IAniListGraphQlClient client,
                                     ISeriesService seriesService,
                                     IAniListMetadataOptions options,
                                     IAniListTitleCache titleCache,
+                                    IAniListChainResolver chainResolver,
+                                    IAniListSeriesLookup lookup,
                                     Logger logger)
         {
             _client = client;
             _seriesService = seriesService;
             _options = options;
             _titleCache = titleCache;
+            _chainResolver = chainResolver;
+            _lookup = lookup;
             _logger = logger;
         }
 
+        // The id may be any entry of a chain. An existing series keeps its root; a new id resolves to the chain root.
         public Tuple<Series, List<Episode>> GetSeriesInfo(int tvdbSeriesId, Language language, string seasonType)
         {
-            var media = _client.GetMedia(tvdbSeriesId);
+            var owner = _lookup.FindByAniListId(tvdbSeriesId);
+            AniListChain chain;
 
-            _titleCache.Store(media);
+            if (owner != null)
+            {
+                chain = _chainResolver.ResolveForSeries(owner, forceRefresh: true);
+            }
+            else
+            {
+                chain = _chainResolver.ResolveForNewId(tvdbSeriesId, out var found);
 
-            return new Tuple<Series, List<Episode>>(AniListMapper.MapSeries(media), AniListMapper.MapEpisodes(media));
+                if (found != null)
+                {
+                    chain = _chainResolver.ResolveForSeries(found, forceRefresh: false);
+                }
+            }
+
+            return new Tuple<Series, List<Episode>>(AniListMapper.MapSeries(chain), AniListMapper.MapEpisodes(chain));
         }
 
         public List<Series> SearchForNewSeriesByImdbId(string imdbId, Language language)
@@ -127,14 +147,14 @@ namespace NzbDrone.Core.MetadataSource.AniList
 
         private List<Series> SearchByAniListId(int aniListId)
         {
-            var existingSeries = _seriesService.FindByTvdbId(aniListId);
+            var chain = _chainResolver.ResolveForNewId(aniListId, out var owner);
 
-            if (existingSeries != null)
+            if (owner != null)
             {
-                return new List<Series> { existingSeries };
+                return new List<Series> { owner };
             }
 
-            return new List<Series> { AniListMapper.MapSeries(_client.GetMedia(aniListId)) };
+            return new List<Series> { AniListMapper.MapSeries(chain) };
         }
 
         private List<Series> SearchByMalId(int malId)
@@ -149,9 +169,12 @@ namespace NzbDrone.Core.MetadataSource.AniList
             return new List<Series> { MapSearchResult(media) };
         }
 
+        // Text search results stay single-entry previews (no relation walk per result); adding one resolves the chain.
         private Series MapSearchResult(AniListMedia media)
         {
-            return _seriesService.FindByTvdbId(media.Id) ?? AniListMapper.MapSeries(media);
+            _titleCache.Store(media);
+
+            return _lookup.FindByAniListId(media.Id) ?? AniListMapper.MapSeries(media);
         }
 
         // Returns true when the term carries one of the prefixes. The id is null when the remainder is not a positive integer.

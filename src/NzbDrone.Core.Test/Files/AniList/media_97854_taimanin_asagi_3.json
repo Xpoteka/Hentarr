@@ -1,0 +1,147 @@
+{
+  "data": {
+    "Media": {
+      "id": 97854,
+      "idMal": 34399,
+      "type": "ANIME",
+      "isAdult": true,
+      "title": {
+        "romaji": "Taimanin Asagi 3",
+        "english": null,
+        "native": "対魔忍アサギ3"
+      },
+      "synonyms": [],
+      "format": "OVA",
+      "status": "FINISHED",
+      "episodes": 2,
+      "duration": 22,
+      "startDate": {
+        "year": 2016,
+        "month": 12,
+        "day": 23
+      },
+      "endDate": {
+        "year": 2017,
+        "month": 2,
+        "day": 24
+      },
+      "description": "Based on the adult game by Anime Lilith.<br>\n<br>\nThe Taimanin Asagi series of erotic visual novels is a must-play for anyone who loves to see strong and sexy women succumb to the pleasures of the flesh. In this action-packed third installment, enjoy many hours of tentacles, monster sex, Ninja fighters, BDSM, and all sorts of other juicy fetish material starring the smoking hot Asagi and her demon-hunting ninja comrades.<br>\n<br>\n(Source: J-List)",
+      "coverImage": {
+        "extraLarge": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/nx97854-RX0nmAxX85Be.jpg",
+        "large": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/nx97854-RX0nmAxX85Be.jpg"
+      },
+      "bannerImage": null,
+      "genres": [
+        "Hentai"
+      ],
+      "averageScore": 60,
+      "studios": {
+        "nodes": [
+          {
+            "name": "ZIZ Entertainment"
+          }
+        ]
+      },
+      "airingSchedule": {
+        "nodes": [
+          {
+            "episode": 1,
+            "airingAt": 1482418800
+          },
+          {
+            "episode": 2,
+            "airingAt": 1487862000
+          }
+        ]
+      },
+      "relations": {
+        "edges": [
+          {
+            "relationType": "PREQUEL",
+            "node": {
+              "id": 21401,
+              "idMal": 31652,
+              "type": "ANIME",
+              "isAdult": true,
+              "format": "OVA",
+              "status": "FINISHED",
+              "title": {
+                "romaji": "Taimanin Asagi 2",
+                "english": null,
+                "native": "対魔忍アサギ2"
+              },
+              "startDate": {
+                "year": 2015,
+                "month": 10,
+                "day": 30
+              }
+            }
+          },
+          {
+            "relationType": "ALTERNATIVE",
+            "node": {
+              "id": 121896,
+              "idMal": 88374,
+              "type": "MANGA",
+              "isAdult": true,
+              "format": "NOVEL",
+              "status": "FINISHED",
+              "title": {
+                "romaji": "Taimanin Asagi 3: Saikyou no Taimanin - Igawa Asagi-hen",
+                "english": null,
+                "native": "対魔忍アサギ3 最強の対魔忍~井河アサギ編~"
+              },
+              "startDate": {
+                "year": 2013,
+                "month": 7,
+                "day": 26
+              }
+            }
+          },
+          {
+            "relationType": "SPIN_OFF",
+            "node": {
+              "id": 124600,
+              "idMal": 43426,
+              "type": "ANIME",
+              "isAdult": true,
+              "format": "OVA",
+              "status": "FINISHED",
+              "title": {
+                "romaji": "Taimanin Asagi: Toraware no Niku Ningyou",
+                "english": null,
+                "native": "対魔忍アサギ～捕らわれの肉人形～"
+              },
+              "startDate": {
+                "year": 2020,
+                "month": 10,
+                "day": 30
+              }
+            }
+          },
+          {
+            "relationType": "ALTERNATIVE",
+            "node": {
+              "id": 163852,
+              "idMal": 101589,
+              "type": "MANGA",
+              "isAdult": true,
+              "format": "MANGA",
+              "status": "FINISHED",
+              "title": {
+                "romaji": "Taimanin Asagi 3 THE COMIC",
+                "english": null,
+                "native": "対魔忍アサギ3 THE COMIC"
+              },
+              "startDate": {
+                "year": 2015,
+                "month": 6,
+                "day": 9
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

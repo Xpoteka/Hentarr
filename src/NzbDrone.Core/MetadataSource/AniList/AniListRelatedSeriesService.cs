@@ -14,13 +14,14 @@ using NzbDrone.Core.Tv.Events;
 
 namespace NzbDrone.Core.MetadataSource.AniList
 {
-    // Fork: AniList splits one story into many entries (sequels, side stories, spin-offs). When a series is added,
-    // every related adult anime entry is added too, with the same folder, profile and monitoring. Each added entry
-    // raises its own SeriesAddedEvent, so the whole franchise graph is walked; entries already in the library or on
-    // the import list exclusions stop the walk.
+    // Fork: AniList splits one story into many entries. Sequels and specials of the same title become seasons of one
+    // series (see AniListChainResolver); the remaining related entries (side stories, spin-offs, alternatives) are
+    // separate stories and are added as their own series when a series is added, with the same folder, profile and
+    // monitoring. Each added series raises its own SeriesAddedEvent, so the whole franchise graph is walked; entries
+    // already in the library or on the import list exclusions stop the walk.
     public class AniListRelatedSeriesService : IHandleAsync<SeriesAddedEvent>, IExecute<AddRelatedSeriesCommand>
     {
-        public static readonly string[] FollowedRelationTypes = { "SEQUEL", "PREQUEL", "SIDE_STORY", "SPIN_OFF", "PARENT", "ALTERNATIVE", "SUMMARY" };
+        public static readonly string[] FollowedRelationTypes = { "SIDE_STORY", "SPIN_OFF", "PARENT", "ALTERNATIVE", "SUMMARY", "SEQUEL", "PREQUEL" };
 
         private readonly IAniListGraphQlClient _client;
         private readonly IAniListMetadataOptions _options;
@@ -28,6 +29,8 @@ namespace NzbDrone.Core.MetadataSource.AniList
         private readonly IAddSeriesService _addSeriesService;
         private readonly IRootFolderService _rootFolderService;
         private readonly IImportListExclusionService _exclusionService;
+        private readonly IAniListChainResolver _chainResolver;
+        private readonly IAniListSeriesLookup _lookup;
         private readonly Logger _logger;
 
         public AniListRelatedSeriesService(IAniListGraphQlClient client,
@@ -36,6 +39,8 @@ namespace NzbDrone.Core.MetadataSource.AniList
                                            IAddSeriesService addSeriesService,
                                            IRootFolderService rootFolderService,
                                            IImportListExclusionService exclusionService,
+                                           IAniListChainResolver chainResolver,
+                                           IAniListSeriesLookup lookup,
                                            Logger logger)
         {
             _client = client;
@@ -44,6 +49,8 @@ namespace NzbDrone.Core.MetadataSource.AniList
             _addSeriesService = addSeriesService;
             _rootFolderService = rootFolderService;
             _exclusionService = exclusionService;
+            _chainResolver = chainResolver;
+            _lookup = lookup;
             _logger = logger;
         }
 
@@ -76,7 +83,7 @@ namespace NzbDrone.Core.MetadataSource.AniList
 
             try
             {
-                relations = _client.GetRelations(series.TvdbId);
+                relations = GetRelations(series);
                 relations.AddRange(FindEntriesLinkingBack(series));
             }
             catch (Exception ex)
@@ -85,16 +92,18 @@ namespace NzbDrone.Core.MetadataSource.AniList
                 return added;
             }
 
+            var ownIds = series.AniListIds != null && series.AniListIds.Any() ? series.AniListIds : new HashSet<int> { series.TvdbId };
+
             foreach (var relation in relations.DistinctBy(r => r.Node?.Id ?? 0))
             {
                 var node = relation.Node;
 
-                if (!IsWanted(relation))
+                if (!IsWanted(relation) || ownIds.Contains(node.Id))
                 {
                     continue;
                 }
 
-                if (_seriesService.FindByTvdbId(node.Id) != null)
+                if (_lookup.FindByAniListId(node.Id) != null)
                 {
                     continue;
                 }
@@ -105,10 +114,35 @@ namespace NzbDrone.Core.MetadataSource.AniList
                     continue;
                 }
 
+                // The entry may be a later season of a story not in the library yet: add that story by its root
+                AniListMedia root;
+
+                try
+                {
+                    var chain = _chainResolver.ResolveForNewId(node.Id, out var owner);
+
+                    if (owner != null || chain == null)
+                    {
+                        continue;
+                    }
+
+                    root = chain.Root;
+                }
+                catch (Exception ex)
+                {
+                    _logger.Warn(ex, "Unable to resolve related entry {0} [{1}]", AniListMapper.GetMainTitle(node), node.Id);
+                    continue;
+                }
+
+                if (root.Id != node.Id && (_lookup.FindByAniListId(root.Id) != null || _exclusionService.FindByTvdbId(root.Id) != null))
+                {
+                    continue;
+                }
+
                 var newSeries = new Series
                 {
-                    TvdbId = node.Id,
-                    Title = AniListMapper.GetMainTitle(node),
+                    TvdbId = root.Id,
+                    Title = AniListMapper.GetMainTitle(root),
                     RootFolderPath = series.RootFolderPath.IsNotNullOrWhiteSpace() ? series.RootFolderPath : _rootFolderService.GetBestRootFolderPath(series.Path),
                     QualityProfileId = series.QualityProfileId,
                     Monitored = series.Monitored,
@@ -139,6 +173,19 @@ namespace NzbDrone.Core.MetadataSource.AniList
             return added;
         }
 
+        // Relations of every entry in the series' chain (from the resolver cache), or fetched per entry.
+        private List<AniListRelationEdge> GetRelations(Series series)
+        {
+            if (_chainResolver.TryGetCached(series.TvdbId, out var chain))
+            {
+                return chain.All.SelectMany(m => m.Relations?.Edges ?? new List<AniListRelationEdge>()).ToList();
+            }
+
+            var ids = series.AniListIds != null && series.AniListIds.Any() ? series.AniListIds : new HashSet<int> { series.TvdbId };
+
+            return ids.SelectMany(id => _client.GetRelations(id)).ToList();
+        }
+
         // AniList relations are not symmetric: Taimanin Yukikaze lists Taimanin Asagi as an alternative, but Asagi does not
         // list Yukikaze. Search the franchise word of the title and keep entries whose own relations point at the library.
         private List<AniListRelationEdge> FindEntriesLinkingBack(Series series)
@@ -151,19 +198,19 @@ namespace NzbDrone.Core.MetadataSource.AniList
                 return result;
             }
 
-            var libraryIds = _seriesService.AllSeriesTvdbIds().Values.ToHashSet();
+            var libraryIds = _lookup.AllAniListIds();
             libraryIds.Add(series.TvdbId);
 
             var candidates = _client.Search(term, _options.AdultFilter)
-                                    .Where(m => m.Id != series.TvdbId && !libraryIds.Contains(m.Id))
+                                    .Where(m => !libraryIds.Contains(m.Id))
                                     .Where(m => AniListMapper.GetMainTitle(m).StartsWith(term, StringComparison.InvariantCultureIgnoreCase))
                                     .Take(25)
                                     .ToList();
 
             foreach (var candidate in candidates)
             {
-                var back = _client.GetRelations(candidate.Id)
-                                  .FirstOrDefault(r => r.Node != null && libraryIds.Contains(r.Node.Id) && FollowedRelationTypes.Contains(r.RelationType?.ToUpperInvariant()));
+                var edges = candidate.Relations?.Edges ?? _client.GetRelations(candidate.Id);
+                var back = edges.FirstOrDefault(r => r.Node != null && libraryIds.Contains(r.Node.Id) && FollowedRelationTypes.Contains(r.RelationType?.ToUpperInvariant()));
 
                 if (back != null)
                 {
@@ -215,6 +262,12 @@ namespace NzbDrone.Core.MetadataSource.AniList
             }
 
             if (!FollowedRelationTypes.Contains(relation.RelationType?.ToUpperInvariant()))
+            {
+                return false;
+            }
+
+            // Specials belong to their parent's season 0, never to a series of their own
+            if (AniListChainResolver.IsSpecial(node))
             {
                 return false;
             }

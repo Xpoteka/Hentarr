@@ -1,0 +1,101 @@
+{
+  "data": {
+    "Media": {
+      "id": 6590,
+      "idMal": 6590,
+      "type": "ANIME",
+      "isAdult": true,
+      "title": {
+        "romaji": "Makai Kishi Ingrid",
+        "english": null,
+        "native": "魔界騎士イングリッド"
+      },
+      "synonyms": [
+        "The Dark Knight Ingrid",
+        "Hell Knight Ingrid",
+        "Taimanin Murasaki"
+      ],
+      "format": "OVA",
+      "status": "FINISHED",
+      "episodes": 4,
+      "duration": 29,
+      "startDate": {
+        "year": 2009,
+        "month": 6,
+        "day": 20
+      },
+      "endDate": {
+        "year": 2010,
+        "month": 8,
+        "day": 27
+      },
+      "description": "Pixy's adaptation of Taimanin Murasaki (or Hell Knight Ingrid), the third Taimanin Asagi game by Black Lilith.<br><br>\nSaid to share the same animators as those who worked on Aniyome wa Ijippari.",
+      "coverImage": {
+        "extraLarge": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx6590-mf7QnOHAb7t9.jpg",
+        "large": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx6590-mf7QnOHAb7t9.jpg"
+      },
+      "bannerImage": null,
+      "genres": [
+        "Fantasy",
+        "Hentai"
+      ],
+      "averageScore": 64,
+      "studios": {
+        "nodes": [
+          {
+            "name": "Anime Antenna Iinkai"
+          }
+        ]
+      },
+      "airingSchedule": {
+        "nodes": []
+      },
+      "relations": {
+        "edges": [
+          {
+            "relationType": "PREQUEL",
+            "node": {
+              "id": 3479,
+              "idMal": 3479,
+              "type": "ANIME",
+              "isAdult": true,
+              "format": "OVA",
+              "status": "FINISHED",
+              "title": {
+                "romaji": "Taimanin Asagi",
+                "english": null,
+                "native": "対魔忍アサギ"
+              },
+              "startDate": {
+                "year": 2007,
+                "month": 2,
+                "day": 24
+              }
+            }
+          },
+          {
+            "relationType": "SIDE_STORY",
+            "node": {
+              "id": 104854,
+              "idMal": 38621,
+              "type": "ANIME",
+              "isAdult": true,
+              "format": "OVA",
+              "status": "FINISHED",
+              "title": {
+                "romaji": "Makai Kishi Ingrid: Re",
+                "english": null,
+                "native": "魔界騎士イングリッド：Re"
+              },
+              "startDate": {
+                "year": 2018,
+                "month": 11,
+                "day": 23
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

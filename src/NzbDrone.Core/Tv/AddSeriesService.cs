@@ -131,10 +131,14 @@ namespace NzbDrone.Core.Tv
 
             var series = tuple.Item1;
 
+            // Fork: an AniList sequel or special resolves to its chain root; keep that id, ApplyChanges would restore the requested one
+            var resolvedTvdbId = series.TvdbId;
+
             // If seasons were passed in on the new series use them, otherwise use the seasons from Skyhook
-            newSeries.Seasons = newSeries.Seasons != null && newSeries.Seasons.Any() ? newSeries.Seasons : series.Seasons;
+            newSeries.Seasons = newSeries.Seasons != null && newSeries.Seasons.Any() && resolvedTvdbId == newSeries.TvdbId ? newSeries.Seasons : series.Seasons;
 
             series.ApplyChanges(newSeries);
+            series.TvdbId = resolvedTvdbId;
 
             // Fork: every AniList entry is handled as anime (absolute numbering, anime search), whatever the add form sent
             series.SeriesType = SeriesTypes.Anime;

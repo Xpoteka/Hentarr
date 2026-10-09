@@ -1,0 +1,164 @@
+{
+  "data": {
+    "Media": {
+      "id": 3479,
+      "idMal": 3479,
+      "type": "ANIME",
+      "isAdult": true,
+      "title": {
+        "romaji": "Taimanin Asagi",
+        "english": null,
+        "native": "対魔忍アサギ"
+      },
+      "synonyms": [
+        "Anti-Demon Hunters",
+        "Anti-Demon Ninja Asagi"
+      ],
+      "format": "OVA",
+      "status": "FINISHED",
+      "episodes": 4,
+      "duration": 29,
+      "startDate": {
+        "year": 2007,
+        "month": 2,
+        "day": 24
+      },
+      "endDate": {
+        "year": 2008,
+        "month": 8,
+        "day": 23
+      },
+      "description": "Based on the erotic game by Black Lilith & Anime Lilith.<br>\n<br>\nAsagi Igawa is a veteran Shinobu. After defeating an arch enemy a long time ago, she thought she could finally settle down. Yet, her arch enemy was revived from death through a pact made with the head demon in the city and swearing to take revenge on her by hurting those who are close to her. Her boyfriend, sister (a Shinobu) and her are part of the act being abused emotionally and... sexually...\n<br><br>\n(Source: Anime News Network)",
+      "coverImage": {
+        "extraLarge": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx3479-TF8DpqcYqOIW.jpg",
+        "large": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx3479-TF8DpqcYqOIW.jpg"
+      },
+      "bannerImage": null,
+      "genres": [
+        "Action",
+        "Hentai",
+        "Supernatural"
+      ],
+      "averageScore": 63,
+      "studios": {
+        "nodes": [
+          {
+            "name": "Anime Antenna Group"
+          }
+        ]
+      },
+      "airingSchedule": {
+        "nodes": []
+      },
+      "relations": {
+        "edges": [
+          {
+            "relationType": "SEQUEL",
+            "node": {
+              "id": 6590,
+              "idMal": 6590,
+              "type": "ANIME",
+              "isAdult": true,
+              "format": "OVA",
+              "status": "FINISHED",
+              "title": {
+                "romaji": "Makai Kishi Ingrid",
+                "english": null,
+                "native": "魔界騎士イングリッド"
+              },
+              "startDate": {
+                "year": 2009,
+                "month": 6,
+                "day": 20
+              }
+            }
+          },
+          {
+            "relationType": "SIDE_STORY",
+            "node": {
+              "id": 8837,
+              "idMal": 8837,
+              "type": "ANIME",
+              "isAdult": true,
+              "format": "SPECIAL",
+              "status": "FINISHED",
+              "title": {
+                "romaji": "Taimanin Asagi: Bonus Video",
+                "english": null,
+                "native": "対魔忍アサギ"
+              },
+              "startDate": {
+                "year": 2009,
+                "month": 5,
+                "day": 1
+              }
+            }
+          },
+          {
+            "relationType": "SEQUEL",
+            "node": {
+              "id": 21401,
+              "idMal": 31652,
+              "type": "ANIME",
+              "isAdult": true,
+              "format": "OVA",
+              "status": "FINISHED",
+              "title": {
+                "romaji": "Taimanin Asagi 2",
+                "english": null,
+                "native": "対魔忍アサギ2"
+              },
+              "startDate": {
+                "year": 2015,
+                "month": 10,
+                "day": 30
+              }
+            }
+          },
+          {
+            "relationType": "ALTERNATIVE",
+            "node": {
+              "id": 93291,
+              "idMal": 82679,
+              "type": "MANGA",
+              "isAdult": true,
+              "format": "NOVEL",
+              "status": "FINISHED",
+              "title": {
+                "romaji": "Taimanin Asagi",
+                "english": null,
+                "native": "対魔忍アサギ"
+              },
+              "startDate": {
+                "year": 2011,
+                "month": 10,
+                "day": 28
+              }
+            }
+          },
+          {
+            "relationType": "ALTERNATIVE",
+            "node": {
+              "id": 163854,
+              "idMal": 105441,
+              "type": "MANGA",
+              "isAdult": true,
+              "format": "MANGA",
+              "status": "FINISHED",
+              "title": {
+                "romaji": "Taimanin Asagi: Hajigyaku no Ankokuyuugi THE COMIC",
+                "english": null,
+                "native": "対魔忍アサギ 恥虐の暗黒遊戯 THE COMIC"
+              },
+              "startDate": {
+                "year": 2017,
+                "month": 2,
+                "day": 8
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

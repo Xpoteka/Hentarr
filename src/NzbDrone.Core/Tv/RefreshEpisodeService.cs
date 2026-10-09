@@ -80,6 +80,11 @@ namespace NzbDrone.Core.Tv
                     episodeToUpdate.EpisodeNumber = episode.EpisodeNumber;
                     episodeToUpdate.SeasonNumber = episode.SeasonNumber;
                     episodeToUpdate.AbsoluteEpisodeNumber = episode.AbsoluteEpisodeNumber;
+
+                    // Fork: AniList chain seasons carry per-entry scene numbers ("Title 2 - 01" is S02E01); nothing else writes them
+                    episodeToUpdate.SceneSeasonNumber = episode.SceneSeasonNumber;
+                    episodeToUpdate.SceneEpisodeNumber = episode.SceneEpisodeNumber;
+                    episodeToUpdate.SceneAbsoluteEpisodeNumber = episode.SceneAbsoluteEpisodeNumber;
                     episodeToUpdate.AiredAfterSeasonNumber = episode.AiredAfterSeasonNumber;
                     episodeToUpdate.AiredBeforeSeasonNumber = episode.AiredBeforeSeasonNumber;
                     episodeToUpdate.AiredBeforeEpisodeNumber = episode.AiredBeforeEpisodeNumber;
