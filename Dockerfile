@@ -10,7 +10,8 @@ ARG DOTNET_VERSION=10.0
 ARG NODE_VERSION=24.19.0
 
 # ---------- frontend ----------
-FROM node:${NODE_VERSION}-bookworm-slim AS ui
+# Docker Hub rate-limits anonymous pulls from GitHub runners; the AWS public mirror serves the same official image
+FROM public.ecr.aws/docker/library/node:${NODE_VERSION}-bookworm-slim AS ui
 WORKDIR /src
 COPY package.json yarn.lock ./
 RUN corepack enable && yarn install --frozen-lockfile --network-timeout 600000
