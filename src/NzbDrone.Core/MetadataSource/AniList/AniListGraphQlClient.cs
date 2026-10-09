@@ -18,6 +18,7 @@ namespace NzbDrone.Core.MetadataSource.AniList
         AniListMedia GetMediaByMalId(int malId);
         List<AniListMedia> Search(string term, AniListAdultFilter adultFilter);
         List<AniListMedia> GetMediaByIds(IEnumerable<int> aniListIds);
+        List<AniListRelationEdge> GetRelations(int aniListId);
     }
 
     public class AniListGraphQlClient : IAniListGraphQlClient
@@ -59,6 +60,19 @@ namespace NzbDrone.Core.MetadataSource.AniList
             query ($idMal: Int) {{
                 Media(idMal: $idMal, type: ANIME) {{ {MediaFields} }}
             }}";
+
+        private const string RelationsQuery = @"
+            query ($id: Int) {
+                Media(id: $id, type: ANIME) {
+                    id
+                    relations {
+                        edges {
+                            relationType
+                            node { id idMal type isAdult format status title { romaji english native } }
+                        }
+                    }
+                }
+            }";
 
         private const string MediaByIdsQuery = $@"
             query ($ids: [Int], $page: Int, $perPage: Int) {{
@@ -170,6 +184,20 @@ namespace NzbDrone.Core.MetadataSource.AniList
             }
 
             return result;
+        }
+
+        public List<AniListRelationEdge> GetRelations(int aniListId)
+        {
+            var response = Execute<AniListRelationsData>(RelationsQuery, new { id = aniListId });
+
+            if (IsNotFound(response))
+            {
+                return new List<AniListRelationEdge>();
+            }
+
+            EnsureNoErrors(response);
+
+            return response.Resource?.Data?.Media?.Relations?.Edges?.Where(e => e.Node != null).ToList() ?? new List<AniListRelationEdge>();
         }
 
         private HttpResponse<AniListResponse<T>> Execute<T>(string query, object variables)

@@ -17,6 +17,7 @@ namespace NzbDrone.Core.MetadataSource.AniList
     public interface IAniListMetadataOptions
     {
         AniListAdultFilter AdultFilter { get; }
+        bool AddRelatedSeries { get; }
     }
 
     // Fork setting. Read from the HENTARR_ADULT_FILTER environment variable first
@@ -26,11 +27,14 @@ namespace NzbDrone.Core.MetadataSource.AniList
     {
         public const string EnvironmentVariable = "HENTARR_ADULT_FILTER";
         public const string ConfigElement = "AniListAdultFilter";
+        public const string RelationsEnvironmentVariable = "HENTARR_ADD_RELATIONS";
+        public const string RelationsConfigElement = "AniListAddRelatedSeries";
 
         private readonly IAppFolderInfo _appFolderInfo;
         private readonly IDiskProvider _diskProvider;
         private readonly Logger _logger;
         private readonly Lazy<AniListAdultFilter> _adultFilter;
+        private readonly Lazy<bool> _addRelatedSeries;
 
         public AniListMetadataOptions(IAppFolderInfo appFolderInfo, IDiskProvider diskProvider, Logger logger)
         {
@@ -38,9 +42,14 @@ namespace NzbDrone.Core.MetadataSource.AniList
             _diskProvider = diskProvider;
             _logger = logger;
             _adultFilter = new Lazy<AniListAdultFilter>(ReadAdultFilter);
+            _addRelatedSeries = new Lazy<bool>(ReadAddRelatedSeries);
         }
 
         public AniListAdultFilter AdultFilter => _adultFilter.Value;
+
+        // Related AniList entries (sequels, prequels, side stories, spin-offs) are added together with a series
+        // unless HENTARR_ADD_RELATIONS or <AniListAddRelatedSeries> in config.xml is set to false.
+        public bool AddRelatedSeries => _addRelatedSeries.Value;
 
         public static bool TryParse(string value, out AniListAdultFilter filter)
         {
@@ -66,6 +75,51 @@ namespace NzbDrone.Core.MetadataSource.AniList
                     filter = AniListAdultFilter.Adult;
                     return false;
             }
+        }
+
+        private bool ReadAddRelatedSeries()
+        {
+            var value = Environment.GetEnvironmentVariable(RelationsEnvironmentVariable);
+
+            if (value.IsNullOrWhiteSpace())
+            {
+                value = ReadConfigElement(RelationsConfigElement);
+            }
+
+            if (value.IsNullOrWhiteSpace())
+            {
+                return true;
+            }
+
+            switch (value.Trim().ToLowerInvariant())
+            {
+                case "false":
+                case "no":
+                case "off":
+                case "0":
+                    return false;
+                default:
+                    return true;
+            }
+        }
+
+        private string ReadConfigElement(string name)
+        {
+            try
+            {
+                var configPath = _appFolderInfo.GetConfigPath();
+
+                if (_diskProvider.FileExists(configPath))
+                {
+                    return XDocument.Parse(_diskProvider.ReadAllText(configPath)).Root?.Element(name)?.Value;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Warn(ex, "Unable to read {0} from config.xml", name);
+            }
+
+            return null;
         }
 
         private AniListAdultFilter ReadAdultFilter()

@@ -24,9 +24,17 @@ Nothing in this fork goes upstream. Do not open issues or pull requests against 
 
 | Setting | Where | Values | Default |
 |---|---|---|---|
+| Add related entries | env `HENTARR_ADD_RELATIONS` or `<AniListAddRelatedSeries>` in `config.xml` | `true`, `false` | `true` |
 | Adult filter for search | env `HENTARR_ADULT_FILTER` or `<AniListAdultFilter>` in `config.xml` | `adult`, `nonadult`, `all` | `adult` |
 | Port | env `SONARR__SERVER__PORT` or `<Port>` in `config.xml` | | `8989` (Docker image: `8990`) |
 | Instance name | env `SONARR__APP__INSTANCENAME` or `<InstanceName>` | must start or end with `Sonarr` (upstream rule) | `Sonarr` (Docker image: `Sonarr - Hentarr`) |
+
+When a series is added, every related AniList entry (sequel, prequel, side story, spin-off, parent, alternative,
+summary) that passes the adult filter is added as well, with the same root folder, profile, monitoring and tags. Each
+added entry repeats the step, so a whole franchise such as Taimanin comes in with one add. Entries already in the
+library or on the import list exclusions are skipped, so deleting one with "add exclusion" keeps it out. The
+`AddRelatedSeries` command (System → Tasks, or `POST /api/v3/command {"name":"AddRelatedSeries"}`, optionally with
+`seriesId`) runs the same expansion for titles that are already in the library.
 
 Search terms: a plain title, `anilist:<id>`, `mal:<id>`. `tvdb:<id>` is treated as an AniList id. `imdb:` and
 `tmdb:` return nothing.
@@ -42,6 +50,7 @@ Search terms: a plain title, `anilist:<id>`, `mal:<id>`. `tvdb:<id>` is treated 
 | `src/NzbDrone.Core/MetadataSource/AniList/AniListMetadataOptions.cs` | Adult filter setting |
 | `src/NzbDrone.Core/MetadataSource/AniList/AniListTitleCache.cs` | In-memory cache of alternate titles fetched during add/refresh |
 | `src/NzbDrone.Core/MetadataSource/AniList/AniListException.cs` | Error type surfaced to the UI |
+| `src/NzbDrone.Core/MetadataSource/AniList/AniListRelatedSeriesService.cs`, `AddRelatedSeriesCommand.cs` | Adds related AniList entries on add and on command |
 | `src/NzbDrone.Core/MetadataSource/AniList/Resource/AniListResource.cs` | GraphQL response classes |
 | `src/NzbDrone.Core/DataAugmentation/AniList/AniListSceneMappingProvider.cs` | Emits alternate titles as scene mappings |
 | `src/NzbDrone.Core/DataAugmentation/AniList/AniListSceneMappingTrigger.cs` | Queues a scene mapping update on every series add/import |

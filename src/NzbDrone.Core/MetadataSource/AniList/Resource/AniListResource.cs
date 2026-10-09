@@ -44,6 +44,7 @@ namespace NzbDrone.Core.MetadataSource.AniList.Resource
     {
         public int Id { get; set; }
         public int? IdMal { get; set; }
+        public string Type { get; set; }
         public bool IsAdult { get; set; }
         public AniListTitle Title { get; set; }
         public List<string> Synonyms { get; set; } = new List<string>();
@@ -60,6 +61,28 @@ namespace NzbDrone.Core.MetadataSource.AniList.Resource
         public int? AverageScore { get; set; }
         public AniListStudioConnection Studios { get; set; }
         public AniListAiringScheduleConnection AiringSchedule { get; set; }
+    }
+
+    public class AniListRelationsData
+    {
+        public AniListRelationsMedia Media { get; set; }
+    }
+
+    public class AniListRelationsMedia
+    {
+        public int Id { get; set; }
+        public AniListRelationConnection Relations { get; set; }
+    }
+
+    public class AniListRelationConnection
+    {
+        public List<AniListRelationEdge> Edges { get; set; } = new List<AniListRelationEdge>();
+    }
+
+    public class AniListRelationEdge
+    {
+        public string RelationType { get; set; }
+        public AniListMedia Node { get; set; }
     }
 
     public class AniListTitle
