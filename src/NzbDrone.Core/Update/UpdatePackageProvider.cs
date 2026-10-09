@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using NzbDrone.Common.Cloud;
 using NzbDrone.Common.EnvironmentInfo;
+using NzbDrone.Common.Fork;
 using NzbDrone.Common.Http;
 using NzbDrone.Core.Analytics;
 using NzbDrone.Core.Datastore;
@@ -34,6 +35,11 @@ namespace NzbDrone.Core.Update
 
         public UpdatePackage GetLatestUpdate(string branch, Version currentVersion)
         {
+            if (!ForkSettings.UpdaterEnabled)
+            {
+                return null;
+            }
+
             var request = _requestBuilder.Create()
                                          .Resource("/update/{branch}")
                                          .AddQueryParam("version", currentVersion)
@@ -63,6 +69,11 @@ namespace NzbDrone.Core.Update
 
         public List<UpdatePackage> GetRecentUpdates(string branch, Version currentVersion, Version previousVersion)
         {
+            if (!ForkSettings.UpdaterEnabled)
+            {
+                return new List<UpdatePackage>();
+            }
+
             var request = _requestBuilder.Create()
                                          .Resource("/update/{branch}/changes")
                                          .AddQueryParam("version", currentVersion)

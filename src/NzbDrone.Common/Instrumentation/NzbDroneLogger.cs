@@ -6,6 +6,7 @@ using NLog.Config;
 using NLog.Targets;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Common.Extensions;
+using NzbDrone.Common.Fork;
 using NzbDrone.Common.Instrumentation.Sentry;
 
 namespace NzbDrone.Common.Instrumentation
@@ -45,7 +46,10 @@ namespace NzbDrone.Common.Instrumentation
                 RegisterDebugger();
             }
 
-            RegisterSentry(updateApp, appFolderInfo);
+            if (ForkSettings.CrashReportingEnabled)
+            {
+                RegisterSentry(updateApp, appFolderInfo);
+            }
 
             if (updateApp)
             {

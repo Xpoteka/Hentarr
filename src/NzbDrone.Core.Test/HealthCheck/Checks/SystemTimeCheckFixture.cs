@@ -43,6 +43,7 @@ namespace NzbDrone.Core.Test.HealthCheck.Checks
         }
 
         [Test]
+        [Ignore("Fork: system time check against services.sonarr.tv is disabled")]
         public void should_return_error_when_system_time_is_more_than_one_day_from_server_time()
         {
             GivenServerTime(DateTime.UtcNow.AddDays(2));

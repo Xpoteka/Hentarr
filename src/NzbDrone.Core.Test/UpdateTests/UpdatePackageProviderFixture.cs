@@ -9,6 +9,7 @@ using NzbDrone.Core.Update;
 
 namespace NzbDrone.Core.Test.UpdateTests
 {
+    [Ignore("Fork: update checks against services.sonarr.tv are disabled")]
     public class UpdatePackageProviderFixture : CoreTest<UpdatePackageProvider>
     {
         [SetUp]

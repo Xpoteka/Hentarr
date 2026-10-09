@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using NLog;
 using NzbDrone.Common.Cloud;
 using NzbDrone.Common.EnvironmentInfo;
+using NzbDrone.Common.Fork;
 using NzbDrone.Common.Http;
 using NzbDrone.Common.Serializer;
 using NzbDrone.Core.Configuration;
@@ -30,6 +31,11 @@ namespace NzbDrone.Core.HealthCheck
 
         public override HealthCheck Check()
         {
+            if (!ForkSettings.UpstreamServicesEnabled)
+            {
+                return new HealthCheck(GetType());
+            }
+
             var request = _cloudRequestBuilder.Services.Create()
                 .Resource("/notification")
                 .AddQueryParam("version", BuildInfo.Version)

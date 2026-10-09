@@ -10,6 +10,7 @@ using NzbDrone.Common.Cache;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Common.Extensions;
+using NzbDrone.Common.Fork;
 using NzbDrone.Common.Instrumentation;
 using NzbDrone.Common.Options;
 using NzbDrone.Core.Authentication;
@@ -263,7 +264,7 @@ namespace NzbDrone.Core.Configuration
         public string OidcUserIdentifier => _authOptions.OidcUserIdentifier ?? GetValue("OidcUserIdentifier", string.Empty, persist: false);
         public string OidcScopes => _authOptions.OidcScopes ?? GetValue("OidcScopes", "openid profile email", persist: false);
 
-        public bool AnalyticsEnabled => _logOptions.AnalyticsEnabled ?? GetValueBoolean("AnalyticsEnabled", true, persist: false);
+        public bool AnalyticsEnabled => ForkSettings.UpstreamServicesEnabled && (_logOptions.AnalyticsEnabled ?? GetValueBoolean("AnalyticsEnabled", true, persist: false));
 
         public string Branch => _updateOptions.Branch ?? GetValue("Branch", "main").ToLowerInvariant();
 
@@ -326,7 +327,7 @@ namespace NzbDrone.Core.Configuration
             }
         }
 
-        public bool UpdateAutomatically => _updateOptions.Automatically ?? GetValueBoolean("UpdateAutomatically", OsInfo.IsWindows, false);
+        public bool UpdateAutomatically => ForkSettings.UpdaterEnabled && (_updateOptions.Automatically ?? GetValueBoolean("UpdateAutomatically", OsInfo.IsWindows, false));
 
         public UpdateMechanism UpdateMechanism =>
             Enum.TryParse<UpdateMechanism>(_updateOptions.Mechanism, out var enumValue)

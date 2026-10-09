@@ -1,6 +1,7 @@
 using System;
 using NLog;
 using NzbDrone.Common.Cloud;
+using NzbDrone.Common.Fork;
 using NzbDrone.Common.Http;
 using NzbDrone.Common.Serializer;
 using NzbDrone.Core.Localization;
@@ -23,6 +24,11 @@ namespace NzbDrone.Core.HealthCheck.Checks
 
         public override HealthCheck Check()
         {
+            if (!ForkSettings.UpstreamServicesEnabled)
+            {
+                return new HealthCheck(GetType());
+            }
+
             try
             {
                 var request = _cloudRequestBuilder.Create()
