@@ -10,6 +10,7 @@ using NzbDrone.Core.Test.Framework;
 
 namespace NzbDrone.Core.Test.IndexerTests.NewznabTests
 {
+    [Ignore("Fork: external id searches are disabled, see NewznabRequestGeneratorForkFixture")]
     public class NewznabRequestGeneratorFixture : CoreTest<NewznabRequestGenerator>
     {
         private SingleEpisodeSearchCriteria _singleEpisodeSearchCriteria;

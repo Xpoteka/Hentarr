@@ -76,13 +76,18 @@ namespace NzbDrone.Core.Indexers.Newznab
             }
         }
 
+        // Fork: Series.TvdbId holds an AniList id, and the other ids are never set, so external id searches
+        // (tvdbid, imdbid, rid, tvmazeid, tmdbid) must never be sent. Searches always use titles.
+        private static bool ExternalIdSearchesEnabled => false;
+
         private bool SupportsTvdbSearch
         {
             get
             {
                 var capabilities = _capabilitiesProvider.GetCapabilities(Settings);
 
-                return capabilities.SupportedTvSearchParameters != null &&
+                return ExternalIdSearchesEnabled &&
+                       capabilities.SupportedTvSearchParameters != null &&
                        capabilities.SupportedTvSearchParameters.Contains("tvdbid");
             }
         }
@@ -93,7 +98,8 @@ namespace NzbDrone.Core.Indexers.Newznab
             {
                 var capabilities = _capabilitiesProvider.GetCapabilities(Settings);
 
-                return capabilities.SupportedTvSearchParameters != null &&
+                return ExternalIdSearchesEnabled &&
+                       capabilities.SupportedTvSearchParameters != null &&
                        capabilities.SupportedTvSearchParameters.Contains("imdbid");
             }
         }
@@ -104,7 +110,8 @@ namespace NzbDrone.Core.Indexers.Newznab
             {
                 var capabilities = _capabilitiesProvider.GetCapabilities(Settings);
 
-                return capabilities.SupportedTvSearchParameters != null &&
+                return ExternalIdSearchesEnabled &&
+                       capabilities.SupportedTvSearchParameters != null &&
                        capabilities.SupportedTvSearchParameters.Contains("rid");
             }
         }
@@ -115,7 +122,8 @@ namespace NzbDrone.Core.Indexers.Newznab
             {
                 var capabilities = _capabilitiesProvider.GetCapabilities(Settings);
 
-                return capabilities.SupportedTvSearchParameters != null &&
+                return ExternalIdSearchesEnabled &&
+                       capabilities.SupportedTvSearchParameters != null &&
                        capabilities.SupportedTvSearchParameters.Contains("tvmazeid");
             }
         }
@@ -126,7 +134,8 @@ namespace NzbDrone.Core.Indexers.Newznab
             {
                 var capabilities = _capabilitiesProvider.GetCapabilities(Settings);
 
-                return capabilities.SupportedTvSearchParameters != null &&
+                return ExternalIdSearchesEnabled &&
+                       capabilities.SupportedTvSearchParameters != null &&
                        capabilities.SupportedTvSearchParameters.Contains("tmdbid");
             }
         }

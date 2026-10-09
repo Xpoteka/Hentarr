@@ -96,7 +96,8 @@ namespace NzbDrone.Core.DecisionEngine
 
                     if (parsedEpisodeInfo != null && !parsedEpisodeInfo.SeriesTitle.IsNullOrWhiteSpace())
                     {
-                        var remoteEpisode = _parsingService.Map(parsedEpisodeInfo, report.TvdbId, report.TvRageId, report.ImdbId, searchCriteria);
+                        // Fork: ids reported by indexers are TVDB/TVRage/IMDb ids while Series.TvdbId holds an AniList id, so match by title only
+                        var remoteEpisode = _parsingService.Map(parsedEpisodeInfo, 0, 0, null, searchCriteria);
                         remoteEpisode.Release = report;
                         remoteEpisode.ReleaseSource = GetReleaseSource(pushedRelease, searchCriteria);
 
