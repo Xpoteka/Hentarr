@@ -1,0 +1,47 @@
+{
+  "data": {
+    "Media": {
+      "id": 177128,
+      "idMal": null,
+      "isAdult": true,
+      "title": {
+        "romaji": "Miyabi na Senpai ❤",
+        "english": null,
+        "native": "みやびな先輩❤"
+      },
+      "synonyms": [
+        "Cool beauty collapse ♥"
+      ],
+      "format": "OVA",
+      "status": "NOT_YET_RELEASED",
+      "episodes": null,
+      "duration": null,
+      "startDate": {
+        "year": 2027,
+        "month": null,
+        "day": null
+      },
+      "endDate": {
+        "year": null,
+        "month": null,
+        "day": null
+      },
+      "description": null,
+      "coverImage": {
+        "extraLarge": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx177128-RRVc7W9E36Wu.jpg",
+        "large": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx177128-RRVc7W9E36Wu.jpg"
+      },
+      "bannerImage": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/177128-NmhUkkz8eytc.jpg",
+      "genres": [
+        "Hentai"
+      ],
+      "averageScore": null,
+      "studios": {
+        "nodes": []
+      },
+      "airingSchedule": {
+        "nodes": []
+      }
+    }
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "data": {
+    "Media": {
+      "id": 6987,
+      "idMal": 6987,
+      "isAdult": true,
+      "title": {
+        "romaji": "Aki-Sora",
+        "english": null,
+        "native": "あきそら"
+      },
+      "synonyms": [
+        "Akisora",
+        "Autumn Sky"
+      ],
+      "format": "OVA",
+      "status": "FINISHED",
+      "episodes": 1,
+      "duration": 21,
+      "startDate": {
+        "year": 2009,
+        "month": 12,
+        "day": 18
+      },
+      "endDate": {
+        "year": 2009,
+        "month": 12,
+        "day": 18
+      },
+      "description": "Aki-Sora revolves around Aki Aoi and Sora Aoi, a pair of close siblings who have shared an intimate bond since childhood. During their coming of age, they each come to realize the true depth of the love they feel for each other and consummate that love in secret. They keep their younger sister, Nami, Sora&rsquo;s twin in the dark about their new relationship. Nami, clueless of what is happening in her household aims to set her brother up with her best friend, Kana Sumiya. Despite these relationships Nami seems to have feelings for someone near to her too but keeps them secret.\n",
+      "coverImage": {
+        "extraLarge": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/6987.jpg",
+        "large": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/6987.jpg"
+      },
+      "bannerImage": null,
+      "genres": [
+        "Ecchi",
+        "Romance"
+      ],
+      "averageScore": 53,
+      "studios": {
+        "nodes": [
+          {
+            "name": "Hoods Entertainment"
+          }
+        ]
+      },
+      "airingSchedule": {
+        "nodes": []
+      }
+    }
+  }
+}
