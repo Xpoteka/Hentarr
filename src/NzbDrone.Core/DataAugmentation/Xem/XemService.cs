@@ -4,13 +4,12 @@ using System.Linq;
 using NLog;
 using NzbDrone.Common.Cache;
 using NzbDrone.Core.DataAugmentation.Scene;
-using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.Tv;
 using NzbDrone.Core.Tv.Events;
 
 namespace NzbDrone.Core.DataAugmentation.Xem
 {
-    public class XemService : ISceneMappingProvider, IHandle<SeriesUpdatedEvent>, IHandle<SeriesRefreshStartingEvent>
+    public class XemService // Fork: detached from ISceneMappingProvider and series events, TheXEM is keyed by TVDB id
     {
         private readonly IEpisodeService _episodeService;
         private readonly IXemProxy _xemProxy;

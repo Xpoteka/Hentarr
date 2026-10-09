@@ -25,22 +25,27 @@ namespace NzbDrone.Core.MetadataSource.AniList
         private readonly IAniListGraphQlClient _client;
         private readonly ISeriesService _seriesService;
         private readonly IAniListMetadataOptions _options;
+        private readonly IAniListTitleCache _titleCache;
         private readonly Logger _logger;
 
         public AniListMetadataProxy(IAniListGraphQlClient client,
                                     ISeriesService seriesService,
                                     IAniListMetadataOptions options,
+                                    IAniListTitleCache titleCache,
                                     Logger logger)
         {
             _client = client;
             _seriesService = seriesService;
             _options = options;
+            _titleCache = titleCache;
             _logger = logger;
         }
 
         public Tuple<Series, List<Episode>> GetSeriesInfo(int tvdbSeriesId, Language language, string seasonType)
         {
             var media = _client.GetMedia(tvdbSeriesId);
+
+            _titleCache.Store(media);
 
             return new Tuple<Series, List<Episode>>(AniListMapper.MapSeries(media), AniListMapper.MapEpisodes(media));
         }
