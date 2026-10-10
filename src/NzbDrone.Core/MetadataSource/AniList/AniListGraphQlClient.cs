@@ -297,8 +297,20 @@ namespace NzbDrone.Core.MetadataSource.AniList
 
                 var pageData = response.Resource?.Data?.Page;
 
+                _logger.Debug("AniList start date page {0} (from {1}): status {2}, {3} entries, has next page {4}",
+                              page,
+                              ToFuzzyDate(from),
+                              (int)response.StatusCode,
+                              pageData?.Media?.Count ?? -1,
+                              pageData?.PageInfo?.HasNextPage);
+
                 if (pageData?.Media == null || !pageData.Media.Any())
                 {
+                    if (page == 1)
+                    {
+                        _logger.Warn("AniList returned no entries for the start date query (from {0}); response body starts with: {1}", ToFuzzyDate(from), (response.Content ?? string.Empty).Truncate(200));
+                    }
+
                     break;
                 }
 
@@ -311,6 +323,8 @@ namespace NzbDrone.Core.MetadataSource.AniList
 
                 page++;
             }
+
+            _logger.Debug("AniList start date query returned {0} entries over {1} page(s)", result.Count, page);
 
             return result;
         }
