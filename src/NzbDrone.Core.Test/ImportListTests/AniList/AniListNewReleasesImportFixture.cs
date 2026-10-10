@@ -107,7 +107,7 @@ namespace NzbDrone.Core.Test.ImportListTests.AniList
         public void should_reject_months_back_outside_the_range()
         {
             new AniListNewReleasesSettings { MonthsBack = 0 }.Validate().IsValid.Should().BeFalse();
-            new AniListNewReleasesSettings { MonthsBack = 121 }.Validate().IsValid.Should().BeFalse();
+            new AniListNewReleasesSettings { MonthsBack = 1201 }.Validate().IsValid.Should().BeFalse();
             new AniListNewReleasesSettings { MonthsBack = 6 }.Validate().IsValid.Should().BeTrue();
         }
     }

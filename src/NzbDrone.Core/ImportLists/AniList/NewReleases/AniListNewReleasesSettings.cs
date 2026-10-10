@@ -9,7 +9,7 @@ namespace NzbDrone.Core.ImportLists.AniList.NewReleases
     {
         public AniListNewReleasesSettingsValidator()
         {
-            RuleFor(c => c.MonthsBack).InclusiveBetween(1, 120);
+            RuleFor(c => c.MonthsBack).InclusiveBetween(1, 1200);
         }
     }
 
@@ -20,7 +20,7 @@ namespace NzbDrone.Core.ImportLists.AniList.NewReleases
 
         public override string BaseUrl { get; set; } = AniListGraphQlClient.Endpoint;
 
-        [FieldDefinition(0, Label = "Months back", HelpText = "Entries that started within this many months before today are listed (1 to 120)", Type = FieldType.Number)]
+        [FieldDefinition(0, Label = "Months back", HelpText = "Entries that started within this many months before today are listed (1 to 1200; 600 covers everything AniList has)", Type = FieldType.Number)]
         public int MonthsBack { get; set; } = 3;
 
         [FieldDefinition(1, Label = "Include upcoming", HelpText = "Also list entries AniList dates in the future, so they are picked up on release day", Type = FieldType.Checkbox)]
