@@ -60,7 +60,7 @@ RUN printf 'PackageVersion=docker\nPackageAuthor=Hentarr\nUpdateMethod=Docker\nB
 # A different port and instance name than stock Sonarr so both can run side by side.
 # Upstream only accepts instance names that start or end with "Sonarr" (ConfigFileProvider.InstanceName).
 ENV SONARR__SERVER__PORT=8990 \
-    SONARR__APP__INSTANCENAME="Sonarr - Hentarr" \
+    SONARR__APP__INSTANCENAME="Hentarr" \
     SONARR__UPDATE__MECHANISM=Docker \
     SONARR__LOG__ANALYTICSENABLED=false \
     HENTARR_ADULT_FILTER=adult \

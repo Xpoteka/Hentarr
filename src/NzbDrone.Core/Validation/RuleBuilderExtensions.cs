@@ -106,7 +106,9 @@ namespace NzbDrone.Core.Validation
         public static IRuleBuilderOptions<T, string> StartsOrEndsWithSonarr<T>(this IRuleBuilder<T, string> ruleBuilder)
         {
             ruleBuilder.SetValidator(new NotEmptyValidator(null));
-            return ruleBuilder.SetValidator(new RegularExpressionValidator("^Sonarr|Sonarr$")).WithMessage("Must start or end with Sonarr");
+
+            // Fork: the instance name may also carry the fork's name
+            return ruleBuilder.SetValidator(new RegularExpressionValidator("^(Sonarr|Hentarr)|(Sonarr|Hentarr)$")).WithMessage("Must start or end with Hentarr or Sonarr");
         }
     }
 }

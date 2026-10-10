@@ -433,7 +433,7 @@ function PageSidebar() {
                 src={`${window.Sonarr.urlBase}/Content/Images/logo.svg`}
                 alt=""
               />
-              <span className={styles.brandName}>Sonarr</span>
+              <span className={styles.brandName}>Hentarr</span>
             </Link>
           </div>
 

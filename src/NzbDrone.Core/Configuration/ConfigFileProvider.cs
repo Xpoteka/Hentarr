@@ -82,6 +82,7 @@ namespace NzbDrone.Core.Configuration
 
     public class ConfigFileProvider : IConfigFileProvider
     {
+        public const string ForkInstanceName = "Hentarr"; // Fork
         public const string CONFIG_ELEMENT_NAME = "Config";
 
         private readonly IEventAggregator _eventAggregator;
@@ -316,14 +317,16 @@ namespace NzbDrone.Core.Configuration
         {
             get
             {
-                var instanceName = _appOptions.InstanceName ?? GetValue("InstanceName", BuildInfo.AppName);
+                // Fork: the instance is called Hentarr; names carrying either word are accepted
+                var instanceName = _appOptions.InstanceName ?? GetValue("InstanceName", ForkInstanceName);
 
-                if (instanceName.StartsWith(BuildInfo.AppName) || instanceName.EndsWith(BuildInfo.AppName))
+                if (instanceName.StartsWith(BuildInfo.AppName) || instanceName.EndsWith(BuildInfo.AppName) ||
+                    instanceName.StartsWith(ForkInstanceName) || instanceName.EndsWith(ForkInstanceName))
                 {
                     return instanceName;
                 }
 
-                return BuildInfo.AppName;
+                return ForkInstanceName;
             }
         }
 

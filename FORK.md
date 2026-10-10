@@ -29,7 +29,7 @@ Nothing in this fork goes upstream. Do not open issues or pull requests against 
 | Add related entries | env `HENTARR_ADD_RELATIONS` or `<AniListAddRelatedSeries>` in `config.xml` | `true`, `false` | `true` |
 | Adult filter for search | env `HENTARR_ADULT_FILTER` or `<AniListAdultFilter>` in `config.xml` | `adult`, `nonadult`, `all` | `adult` |
 | Port | env `SONARR__SERVER__PORT` or `<Port>` in `config.xml` | | `8989` (Docker image: `8990`) |
-| Instance name | env `SONARR__APP__INSTANCENAME` or `<InstanceName>` | must start or end with `Sonarr` (upstream rule) | `Sonarr` (Docker image: `Sonarr - Hentarr`) |
+| Instance name | env `SONARR__APP__INSTANCENAME` or `<InstanceName>` | must start or end with `Hentarr` or `Sonarr` | `Hentarr` |
 
 When a series is added, every related AniList entry (side story, spin-off, parent, alternative, summary, and sequels
 or prequels that are not part of the series' own chain) that passes the adult filter is added as well, with the same
@@ -86,6 +86,16 @@ It is the "grab everything new" list; pair it with a quality profile or tag if "
 `AniListImportBase` is the OAuth user-list base and is untouched). Other import list types still send the AniList id
 where they expect a TVDB id and are not used.
 
+## Branding
+
+The UI calls itself Hentarr: header, sidebar, login page, `{appName}` in translations, and the default instance name
+(`Hentarr`; names starting or ending with "Hentarr" or "Sonarr" are accepted so existing configs keep working). The
+logo (`Logo/*`, `frontend/src/Content/Images/logo.svg` and the favicon set) is a pink-to-purple circle with a white
+H, drawn for this fork. Settings → Metadata Source credits AniList, and the English strings that mentioned TheTVDB
+("TVDB ID", "View on TVDB", removed-series health checks, the id search hint) now say AniList. Other languages still
+show the upstream wording. Internal names (`Sonarr.*` assemblies, `/config` layout, `SONARR__*` environment
+variables, the `X-Sonarr-Client` header) are unchanged so nothing breaks on rebase.
+
 ## New files (fork-only)
 
 | Path | Purpose |
@@ -130,7 +140,12 @@ Every edit is marked with a `// Fork:` comment or an `[Ignore("Fork: ...")]` att
 | `src/NzbDrone.Core/MediaFiles/EpisodeImport/Aggregation/AggregationService.cs` | Unparsed media files are rejected after the aggregators ran, so the single-episode fallback can map them |
 | `src/NzbDrone.Common/Instrumentation/NzbDroneLogger.cs` | Sentry target only registered when `ForkSettings.CrashReportingEnabled` |
 | `src/NzbDrone.Core/Update/UpdatePackageProvider.cs` | Returns no updates when `ForkSettings.UpdaterEnabled` is false |
-| `src/NzbDrone.Core/Configuration/ConfigFileProvider.cs` | `AnalyticsEnabled` and `UpdateAutomatically` forced false |
+| `src/NzbDrone.Core/Configuration/ConfigFileProvider.cs` | `AnalyticsEnabled` and `UpdateAutomatically` forced false; instance name defaults to Hentarr and accepts names carrying Hentarr |
+| `src/NzbDrone.Core/Validation/RuleBuilderExtensions.cs` | Instance name rule accepts Hentarr as well as Sonarr |
+| `src/NzbDrone.Core/Localization/Core/en.json` | AniList wording where the UI said TheTVDB; Hentarr in section captions |
+| `Logo/*`, `frontend/src/Content/Images/logo.svg`, `frontend/src/Content/Images/Icons/*` | Hentarr logo and favicons |
+| `frontend/src/Utilities/String/translate.ts`, `Components/Page/Header/PageHeader.tsx`, `Components/Page/Sidebar/PageSidebar.tsx`, `login.html`, `logout.html` | App name shown as Hentarr |
+| `frontend/src/Settings/MetadataSource/TheTvdb.tsx` | Credits AniList with the Hentarr logo |
 | `src/NzbDrone.Core/HealthCheck/ServerSideNotificationService.cs`, `Checks/SystemTimeCheck.cs`, `Checks/ProxyCheck.cs` | Return a healthy result without calling `services.sonarr.tv` |
 | `src/NzbDrone.Core.Test/IndexerTests/NewznabTests/NewznabRequestGeneratorFixture.cs` | Whole fixture ignored (assumes id searches); replaced by the fork fixture |
 | `src/NzbDrone.Core.Test/UpdateTests/UpdatePackageProviderFixture.cs` | Ignored (calls `services.sonarr.tv`) |

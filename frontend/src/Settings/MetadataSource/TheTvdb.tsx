@@ -1,18 +1,15 @@
 import React from 'react';
 import InlineMarkdown from 'Components/Markdown/InlineMarkdown';
 import SectionHeading from 'Components/SectionHeading';
-import useTheme from 'Helpers/Hooks/useTheme';
 import translate from 'Utilities/String/translate';
 import styles from './TheTvdb.module.css';
 
 function TheTvdb() {
-  const theme = useTheme();
-
   return (
     <div className={styles.container}>
       <img
         className={styles.image}
-        src={`${window.Sonarr.urlBase}/Content/Images/thetvdb-${theme}.png`}
+        src={`${window.Sonarr.urlBase}/Content/Images/logo.svg`}
       />
 
       <div className={styles.info}>
@@ -23,7 +20,7 @@ function TheTvdb() {
               data={translate(
                 'SeriesAndEpisodeInformationIsProvidedByTheTVDB',
                 {
-                  url: 'https://www.thetvdb.com/subscribe',
+                  url: 'https://anilist.co',
                 }
               )}
             />
